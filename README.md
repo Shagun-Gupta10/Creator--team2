@@ -1,1 +1,1 @@
-CreatorIQ
+Creator IQ
