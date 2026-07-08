@@ -72,5 +72,13 @@ backend/
 Backend Lead:
 - Chandan
 
-Frontend:
-- (Team Members)
+Frontend Lead:
+- Pallavi
+
+Database Lead:
+- Sandeep
+
+Dashboard and Analytics Lead:
+- Sabarmathi
+
+
