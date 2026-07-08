@@ -53,5 +53,33 @@ def login_user(user, db):
         "token_type": "bearer"
     }
     
+def login_oauth(form_data, db):
 
+    existing_user = db.query(User).filter(
+        User.email == form_data.username
+    ).first()
+
+    if not existing_user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found"
+        )
+
+    if not verify_password(
+        form_data.password,
+        existing_user.password
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect password"
+        )
+
+    access_token = create_access_token(
+        data={"sub": existing_user.email}
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
     
