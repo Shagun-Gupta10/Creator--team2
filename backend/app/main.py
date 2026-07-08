@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routes.auth import router as auth_router
 from app.database import Base, engine
 from app.models.user import User
+<<<<<<< HEAD
 from app.models.content import Content
 from app.models.user_settings import UserSettings
 from app.models.audience import Audience
@@ -22,6 +23,11 @@ from app.routes.audience import router as audience_router
 
 # Create tables if they don't exist yet
 Base.metadata.create_all(bind=engine, checkfirst=True)
+=======
+from app.models.creator_profile import CreatorProfile
+from app.models.content import Content
+from app.models.analytics import Analytics
+>>>>>>> 5e40b82 (Updated authentication to use PostgreSQL user schema)
 
 
 app = FastAPI()

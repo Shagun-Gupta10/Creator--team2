@@ -1,6 +1,7 @@
 from pathlib import Path
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
+<<<<<<< HEAD
 
 BASE_DIR = Path(__file__).resolve().parent
 DATABASE_PATH = BASE_DIR.parent / "creatoriq.db"
@@ -10,6 +11,10 @@ engine = create_engine(
     DATABASE_URL,
     connect_args={"check_same_thread": False}
 )
+=======
+DATABASE_URL = "postgresql://postgres:root@localhost:5432/creatoriq_db"
+engine = create_engine(DATABASE_URL)
+>>>>>>> 5e40b82 (Updated authentication to use PostgreSQL user schema)
 SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
