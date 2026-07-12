@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes.auth import router as auth_router
 from app.database import Base, engine
+
+# Import Models
 from app.models.user import User
+<<<<<<< HEAD
 <<<<<<< HEAD
 from app.models.content import Content
 from app.models.user_settings import UserSettings
@@ -24,33 +26,75 @@ from app.routes.audience import router as audience_router
 # Create tables if they don't exist yet
 Base.metadata.create_all(bind=engine, checkfirst=True)
 =======
+=======
+>>>>>>> 9f50451 (Completed creator profile, content and analytics modules)
 from app.models.creator_profile import CreatorProfile
 from app.models.content import Content
 from app.models.analytics import Analytics
->>>>>>> 5e40b82 (Updated authentication to use PostgreSQL user schema)
+from app.models.user_settings import UserSettings
+from app.models.team_member import TeamMember
+from app.models.audience import Audience
+from app.models.audience_history import AudienceHistory
+from app.models.social_account import SocialAccount
+from app.models.revenue import Sponsorship, AdRevenue
 
+# Import Routers
+from app.routes.auth import router as auth_router
+from app.routes.creator_profile import router as creator_profile_router
+from app.routes.content import router as content_router
+from app.routes.analytics import router as analytics_router
+from app.routes.dashboard import router as dashboard_router
+from app.routes.settings import router as settings_router
+from app.routes.audience import router as audience_router
+from app.routes.social import router as social_router
+from app.routes.instagram_auth import router as instagram_router
+from app.routes.instagram_api import router as instagram_api_router
+from app.routes import growth, revenue
 
-app = FastAPI()
+# Create tables
+Base.metadata.create_all(bind=engine, checkfirst=True)
 
-# Allow frontend dev server calls (Vite)
+app = FastAPI(
+    title="CreatorIQ API",
+    version="1.0.0"
+)
+
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
 app.include_router(auth_router)
+app.include_router(creator_profile_router)
 app.include_router(content_router)
+app.include_router(analytics_router)
 app.include_router(dashboard_router)
 app.include_router(settings_router)
 app.include_router(team_router)
 app.include_router(instagram_router)
+<<<<<<< HEAD
 app.include_router(audience_router)
 
 
 @app.get("/")
 def home():
     return {"message": "Backend running successfully"}
+=======
+app.include_router(instagram_api_router)
+app.include_router(growth.router)
+app.include_router(revenue.router)
+
+@app.get("/")
+def home():
+    return {"message": "Backend running successfully"}
+>>>>>>> 9f50451 (Completed creator profile, content and analytics modules)

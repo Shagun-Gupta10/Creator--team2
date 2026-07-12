@@ -1,3 +1,4 @@
+
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from sqlalchemy import func, desc, asc
@@ -52,8 +53,8 @@ def create_content(content, db: Session, current_user: "User"):
         watch_time=content.watch_time,
         reach=content.reach,
         engagement_rate=engagement_rate,
-        creator_id=current_user.id,
-    )
+        creator_id=current_user.id,  
+            )
 
     db.add(new_content)
     db.commit()
