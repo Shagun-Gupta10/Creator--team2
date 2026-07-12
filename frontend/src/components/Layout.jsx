@@ -1,64 +1,138 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, Settings, LogOut } from 'lucide-react';
+
+import { clearAccessToken, getAccessToken, getProfile } from '../lib/api';
+import { applyThemeToDocument, getThemePreference, setThemePreference } from '../lib/theme';
+import { useEffect, useState } from 'react';
+import { canAccessRole } from '../lib/role';
+
+
+
+
+
 
 export default function Layout() {
   const location = useLocation();
-  
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+
+  // Apply theme once on load.
+
+  // This keeps light/dark responsive across pages.
+  if (typeof document !== 'undefined') {
+    const current = getThemePreference();
+    applyThemeToDocument(current);
+  }
+
+
+  useEffect(() => {
+    let cancelled = false;
+    async function run() {
+      try {
+        setLoadingProfile(true);
+        const token = getAccessToken();
+        if (!token) {
+          if (!cancelled) setProfile(null);
+          return;
+        }
+        const p = await getProfile();
+        if (!cancelled) setProfile(p);
+      } catch {
+        if (!cancelled) setProfile(null);
+      } finally {
+        if (!cancelled) setLoadingProfile(false);
+      }
+    }
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const role = profile?.role;
+
   const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Audience', path: '/audience', icon: Users },
-    { name: 'Settings', path: '/settings', icon: Settings },
-  ];
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, allowed: ['creator', 'agency', 'marketing_team', 'administrator'] },
+    { name: 'Content', path: '/content', icon: LayoutDashboard, allowed: ['creator', 'agency', 'marketing_team', 'administrator'] },
+    { name: 'Audience', path: '/audience', icon: Users, allowed: ['creator', 'agency', 'marketing_team', 'administrator'] },
+    { name: 'Settings', path: '/settings', icon: Settings, allowed: ['creator', 'agency', 'marketing_team', 'administrator'] },
+  ].filter((i) => (loadingProfile ? true : canAccessRole(role, i.allowed)));
+
+
+  function onLogout() {
+    clearAccessToken();
+    navigate('/login', { replace: true });
+  }
+
+  function toggleTheme() {
+    const next = getThemePreference() === 'dark' ? 'light' : 'dark';
+    setThemePreference(next);
+    applyThemeToDocument(next);
+  }
+
 
   return (
-    <div className="flex h-screen bg-background">
-      {/* Sidebar */}
-      <div className="w-64 bg-surface border-r border-slate-700/50 flex flex-col">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Creator IQ
-          </h1>
-        </div>
-        
-        <nav className="flex-1 px-4 space-y-2 mt-4">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            
-            return (
-              <Link
-                key={item.name}
-                to={item.path}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                  isActive 
-                    ? 'bg-primary/10 text-primary font-medium' 
-                    : 'text-muted hover:bg-slate-800/50 hover:text-text'
-                }`}
+    <div className="min-h-screen bg-background">
+      {/* Top Nav */}
+      <header className="sticky top-0 z-10 bg-surface/80 backdrop-blur border-b border-slate-700/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="h-16 flex items-center justify-between gap-4">
+            <Link
+              to="/dashboard"
+              className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
+            >
+              Creator IQ
+            </Link>
+
+            <nav className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl text-muted hover:bg-slate-800/50 hover:text-text transition-colors"
+                aria-label="Toggle theme"
               >
-                <Icon size={20} className={isActive ? 'text-primary' : ''} />
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
-        
-        <div className="p-4 border-t border-slate-700/50">
-          <Link
-            to="/login"
-            className="flex items-center space-x-3 px-4 py-3 text-muted hover:text-red-400 transition-colors rounded-lg hover:bg-red-400/10"
-          >
-            <LogOut size={20} />
-            <span>Logout</span>
-          </Link>
+                <span className="text-sm">{getThemePreference() === 'dark' ? 'Light' : 'Dark'}</span>
+              </button>
+
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 ${
+                      isActive
+                        ? 'bg-primary/10 text-primary font-medium'
+                        : 'text-muted hover:bg-slate-800/50 hover:text-text'
+                    }`}
+                  >
+                    <Icon size={18} className={isActive ? 'text-primary' : ''} />
+                    <span className="hidden sm:inline">{item.name}</span>
+                  </Link>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={onLogout}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-muted hover:text-red-400 transition-colors hover:bg-red-400/10"
+              >
+                <LogOut size={18} />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            </nav>
+          </div>
         </div>
-      </div>
+      </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8">
-          <Outlet />
-        </div>
+      <main className="max-w-7xl mx-auto p-6 sm:p-8">
+        <Outlet />
       </main>
     </div>
   );
 }
+

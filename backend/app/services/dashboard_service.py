@@ -4,17 +4,17 @@ from sqlalchemy import func
 from app.models.content import Content
 
 
-def get_dashboard_summary(db: Session):
+def get_dashboard_summary(db: Session, current_user: "User"):
+    if current_user.role == "creator":
+        q = db.query(Content).filter(Content.creator_id == current_user.id)
+    else:
+        q = db.query(Content)
 
-    total_posts = db.query(Content).count()
+    total_posts = q.count()
 
-    total_views = db.query(
-        func.sum(Content.views)
-    ).scalar() or 0
+    total_views = q.with_entities(func.sum(Content.views)).scalar() or 0
 
-    total_likes = db.query(
-        func.sum(Content.likes)
-    ).scalar() or 0
+    total_likes = q.with_entities(func.sum(Content.likes)).scalar() or 0
 
     engagement_rate = 0
 

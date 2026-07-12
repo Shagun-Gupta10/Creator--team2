@@ -38,9 +38,5 @@ def profile(current_user: User = Depends(get_current_user)):
         "role": current_user.role
     }
     
-@router.post("/token")
-def token(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)
-):
-    ...
+# (Removed duplicate/incomplete /token handler that was breaking auth routing)
+
