@@ -3,18 +3,18 @@ from datetime import date
 from pydantic import BaseModel, Field
 
 
+# ----------------------------
+# Create Content Schema
+# ----------------------------
 class ContentCreate(BaseModel):
-    # Existing fields
     title: str = Field(..., min_length=1, max_length=200)
     platform: str = Field(..., min_length=2, max_length=50)
 
-    # Fields from the incoming commit
     creator_id: int
     description: str
     content_type: str
     publish_date: date
 
-    # Analytics fields
     views: int = Field(0, ge=0)
     likes: int = Field(0, ge=0)
     comments: int = Field(0, ge=0)
@@ -25,6 +25,9 @@ class ContentCreate(BaseModel):
     reach: int = Field(0, ge=0)
 
 
+# ----------------------------
+# Update Content Schema
+# ----------------------------
 class ContentUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=200)
     platform: Optional[str] = Field(None, min_length=2, max_length=50)

@@ -1,11 +1,11 @@
-
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from sqlalchemy import func, desc, asc
+from datetime import datetime, timedelta
+
 from app.models.content import Content
 from app.models.user import User
 from app.auth.oauth2 import get_current_user
-from datetime import datetime, timedelta
 
 
 def _get_period_bounds(period: str | None = None):
@@ -31,9 +31,8 @@ def _get_period_bounds(period: str | None = None):
     return None, None
 
 
-def create_content(content, db: Session, current_user: "User"):
+def create_content(content, db: Session, current_user: User):
 
-    # Calculate engagement rate automatically
     if content.reach > 0:
         engagement_rate = (
             (content.likes + content.comments + content.shares)
@@ -43,8 +42,12 @@ def create_content(content, db: Session, current_user: "User"):
         engagement_rate = 0
 
     new_content = Content(
+        creator_id=current_user.id,
         title=content.title,
         platform=content.platform,
+        description=content.description,
+        content_type=content.content_type,
+        publish_date=content.publish_date,
         views=content.views,
         likes=content.likes,
         comments=content.comments,
@@ -53,8 +56,7 @@ def create_content(content, db: Session, current_user: "User"):
         watch_time=content.watch_time,
         reach=content.reach,
         engagement_rate=engagement_rate,
-        creator_id=current_user.id,  
-            )
+    )
 
     db.add(new_content)
     db.commit()
@@ -65,8 +67,6 @@ def create_content(content, db: Session, current_user: "User"):
         "content_id": new_content.id,
         "engagement_rate": engagement_rate,
     }
-
-
 def serialize_content(content: Content):
     return {
         "id": content.id,
@@ -108,8 +108,10 @@ def get_all_content(
         query = query.filter(Content.title.ilike(f"%{search}%"))
 
     start_date, end_date = _get_period_bounds(period)
+
     if start_date:
         query = query.filter(Content.created_at >= start_date)
+
     if end_date:
         query = query.filter(Content.created_at < end_date)
 
