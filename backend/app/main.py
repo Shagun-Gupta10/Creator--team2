@@ -8,7 +8,8 @@ from app.models.content import Content
 from app.routes.content import router as content_router
 from app.routes.dashboard import router as dashboard_router
 from app.routes.settings import router as settings_router
-
+from app.models.user_settings import UserSettings
+from app.models.team_member import TeamMember
 
 # Create tables if they don't exist yet
 Base.metadata.create_all(bind=engine, checkfirst=True)
@@ -34,10 +35,9 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(content_router)
 app.include_router(dashboard_router)
-
+app.include_router(settings_router)
 
 @app.get("/")
 def home():
     return {"message": "Backend running successfully"}
-
 
