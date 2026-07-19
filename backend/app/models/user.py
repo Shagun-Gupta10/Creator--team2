@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String
 from app.database import Base
 from sqlalchemy.orm import relationship
-
+from sqlalchemy import ForeignKey
 
 class User(Base):
     __tablename__ = "users"
@@ -10,8 +10,8 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
     role = Column(String, nullable=False)
-
+    creator_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     contents = relationship("Content", back_populates="creator")
     settings = relationship("UserSettings", back_populates="user", uselist=False)
 
-    
+   

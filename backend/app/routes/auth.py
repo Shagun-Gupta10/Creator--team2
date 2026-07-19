@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends
-from app.schemas.user_schema import UserCreate
+from app.schemas.user_schema import UserCreate, UserUpdate, ChangePassword
 from app.schemas.login_schema import LoginRequest
 from app.services.auth_service import (
     register_user,
     login_user,
-    login_oauth
+    login_oauth,
+    update_profile,
+    change_password
 )
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -40,3 +42,18 @@ def profile(current_user: User = Depends(get_current_user)):
     
 # (Removed duplicate/incomplete /token handler that was breaking auth routing)
 
+@router.put("/profile")
+def update_user_profile(
+    user: UserUpdate,
+    current_user = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return update_profile(current_user, user, db)
+
+@router.put("/change-password")
+def update_password(
+    password_data: ChangePassword,
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return change_password(current_user, password_data, db)
