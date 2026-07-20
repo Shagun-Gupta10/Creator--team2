@@ -207,6 +207,7 @@ const NAV_ITEMS = [
   { key: "home", label: "Dashboard Home", icon: LayoutGrid },
   { key: "content", label: "Content Analytics", icon: BarChart3 },
   { key: "audience", label: "Audience Analytics", icon: Users },
+  { key: "growth", label: "Growth and Trends", icon: TrendingUp },
   { key: "reports", label: "Reports", icon: FileText },
 ];
 
@@ -952,7 +953,73 @@ const Reports = () => {
     </div>
   );
 };
+const GrowthTrendDashboard = () => {
+  return (
+    <div className="space-y-6">
 
+      <SectionHeader
+        eyebrow="Growth & Trends"
+        title="Growth & Trend Analysis"
+        subtitle="Monitor social media growth, trending hashtags, reach prediction and AI insights."
+      />
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+
+        <div className="ad-card p-5">
+          <h3 className="font-semibold">Growth Rate</h3>
+          <h1 className="text-3xl font-bold text-green-600">+38%</h1>
+          <p>This Month</p>
+        </div>
+
+        <div className="ad-card p-5">
+          <h3 className="font-semibold">Trend Score</h3>
+          <h1 className="text-3xl font-bold text-blue-600">92%</h1>
+          <p>AI Prediction</p>
+        </div>
+
+        <div className="ad-card p-5">
+          <h3 className="font-semibold">Reach Prediction</h3>
+          <h1 className="text-3xl font-bold">1.2M</h1>
+          <p>Next 30 Days</p>
+        </div>
+
+        <div className="ad-card p-5">
+          <h3 className="font-semibold">Best Posting Time</h3>
+          <h2 className="text-xl font-bold">7 PM – 9 PM</h2>
+          <p>Highest Engagement</p>
+        </div>
+
+      </div>
+
+      {/* Trending Hashtags */}
+      <div className="ad-card p-6">
+        <h2 className="text-xl font-bold mb-4">🔥 Trending Hashtags</h2>
+
+        <div className="flex flex-wrap gap-3">
+          <span className="px-3 py-2 rounded-full bg-blue-100">#AI</span>
+          <span className="px-3 py-2 rounded-full bg-pink-100">#MachineLearning</span>
+          <span className="px-3 py-2 rounded-full bg-green-100">#SocialMedia</span>
+          <span className="px-3 py-2 rounded-full bg-yellow-100">#Viral</span>
+          <span className="px-3 py-2 rounded-full bg-purple-100">#Creator</span>
+        </div>
+      </div>
+
+      {/* AI Suggestions */}
+      <div className="ad-card p-6">
+        <h2 className="text-xl font-bold mb-4">🤖 AI Trend Suggestions</h2>
+
+        <ul className="list-disc ml-6 space-y-2">
+          <li>Post between 7 PM and 9 PM.</li>
+          <li>Use 3–5 trending hashtags.</li>
+          <li>Short-form videos have higher reach.</li>
+          <li>AI predicts 38% audience growth.</li>
+        </ul>
+      </div>
+
+    </div>
+  );
+};
 /* ============================================================
    APP ROOT
    ============================================================ */
@@ -967,6 +1034,7 @@ export default function AnalyticsDashboard() {
     switch (active) {
       case "content": return <ContentAnalytics />;
       case "audience": return <AudienceAnalytics />;
+      case "growth": return <GrowthTrendDashboard />;
       case "reports": return <Reports />;
       default: return <DashboardHome />;
     }
