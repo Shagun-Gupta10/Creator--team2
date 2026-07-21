@@ -10,7 +10,8 @@ from app.routes.dashboard import router as dashboard_router
 from app.routes.settings import router as settings_router
 from app.models.user_settings import UserSettings
 from app.models.team_member import TeamMember
-
+from app.models.audience import Audience
+from app.routes.audience import router as audience_router
 # Create tables if they don't exist yet
 Base.metadata.create_all(bind=engine, checkfirst=True)
 
@@ -36,7 +37,7 @@ app.include_router(auth_router)
 app.include_router(content_router)
 app.include_router(dashboard_router)
 app.include_router(settings_router)
-
+app.include_router(audience_router)
 @app.get("/")
 def home():
     return {"message": "Backend running successfully"}

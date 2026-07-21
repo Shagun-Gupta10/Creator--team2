@@ -13,5 +13,10 @@ class User(Base):
     creator_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     contents = relationship("Content", back_populates="creator")
     settings = relationship("UserSettings", back_populates="user", uselist=False)
+    audience = relationship(
+    "Audience",
+    back_populates="creator",
+    cascade="all, delete-orphan"
+)
 
    
