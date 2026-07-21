@@ -19,3 +19,6 @@ def get_db():
         yield db
     finally:
         db.close()
+
+from app.models.post import InstagramPost
+Base.metadata.create_all(bind=engine)

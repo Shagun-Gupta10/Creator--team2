@@ -6,9 +6,14 @@ from app.services.dashboard_service import get_dashboard_summary
 from app.auth.oauth2 import get_current_user
 from app.auth.rbac import require_role
 from app.models.user import User
-
+from fastapi import APIRouter
+from app.services.dashboard_service import get_instagram_dashboard
 
 router = APIRouter()
+router = APIRouter(
+    prefix="/dashboard",
+    tags=["Dashboard"]
+)
 
 @router.get("/dashboard")
 def dashboard(
@@ -17,3 +22,6 @@ def dashboard(
 ):
     return get_dashboard_summary(db, current_user)
 
+@router.get("/instagram")
+def instagram_dashboard():
+    return get_instagram_dashboard()

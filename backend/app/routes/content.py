@@ -7,14 +7,14 @@ from app.services.content_service import (
     get_content_analytics,
     get_top_content,
     get_platform_analytics,
-    get_content_trends
+    get_content_trends,
+    compare_content,
 )
 from app.database import get_db
 from app.schemas.content_schema import ContentCreate
 from app.auth.oauth2 import get_current_user
 from app.auth.rbac import require_role
 from app.models.user import User
-
 
 router = APIRouter()
 
@@ -84,3 +84,27 @@ def content_trends(
     ),
 ):
     return get_content_trends(db, current_user)
+
+@router.get("/content/compare")
+def compare_two_contents(
+    content1: int,
+    content2: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role(
+            [
+                "creator",
+                "agency",
+                "marketing_team",
+                "administrator",
+            ]
+        )
+    ),
+):
+    return compare_content(
+        db,
+        content1,
+        content2,
+        current_user,
+    )
+

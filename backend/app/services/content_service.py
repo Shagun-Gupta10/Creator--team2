@@ -2,8 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from sqlalchemy import func
 from app.models.content import Content
-from sqlalchemy import func
-
+from app.models.user import User
 from app.auth.oauth2 import get_current_user
 
 
@@ -205,3 +204,45 @@ def get_content_trends(db: Session, current_user: "User"):
         })
 
     return trends
+
+def compare_content(
+    db: Session,
+    content1: int,
+    content2: int,
+    current_user: "User",
+):
+    query = db.query(Content)
+
+    if current_user.role == "creator":
+        query = query.filter(
+            Content.creator_id == current_user.id
+        )
+
+    first = query.filter(Content.id == content1).first()
+    second = query.filter(Content.id == content2).first()
+
+    if not first or not second:
+        return {
+            "message": "One or both content records not found."
+        }
+
+    return {
+        "content_1": {
+            "title": first.title,
+            "views": first.views,
+            "likes": first.likes,
+            "comments": first.comments,
+            "shares": first.shares,
+            "reach": first.reach,
+            "engagement_rate": first.engagement_rate,
+        },
+        "content_2": {
+            "title": second.title,
+            "views": second.views,
+            "likes": second.likes,
+            "comments": second.comments,
+            "shares": second.shares,
+            "reach": second.reach,
+            "engagement_rate": second.engagement_rate,
+        },
+    }

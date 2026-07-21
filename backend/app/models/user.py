@@ -14,9 +14,15 @@ class User(Base):
     contents = relationship("Content", back_populates="creator")
     settings = relationship("UserSettings", back_populates="user", uselist=False)
     audience = relationship(
-    "Audience",
-    back_populates="creator",
-    cascade="all, delete-orphan"
-)
+        "Audience",
+        back_populates="creator",
+        cascade="all, delete-orphan"
+    )
+    social_accounts = relationship(
+        "SocialAccount",
+        back_populates="creator",
+        cascade="all, delete-orphan",
+    )
+
 
    
