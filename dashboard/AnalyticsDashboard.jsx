@@ -1,3 +1,6 @@
+
+import RevenueDashboard from "./revenue/RevenueDashboard";
+import ReportDashboard from "./reports/ReportDashboard";
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -9,9 +12,8 @@ import {
   Heart, MessageCircle, Share2, Clock, Download, Filter, Calendar,
   MoreHorizontal, ArrowUpRight, ArrowDownRight, Play, DollarSign,
   UserPlus, Globe, ChevronsUpDown, CheckCircle2, AlertCircle, Loader2,
-  Settings, Sparkles,
+  Settings, Sparkles,Video,Award,BadgeDollarSign,
 } from "lucide-react";
-
 /* ============================================================
    DESIGN TOKENS — injected once as global CSS custom properties
    ============================================================ */
@@ -208,6 +210,7 @@ const NAV_ITEMS = [
   { key: "content", label: "Content Analytics", icon: BarChart3 },
   { key: "audience", label: "Audience Analytics", icon: Users },
   { key: "growth", label: "Growth and Trends", icon: TrendingUp },
+  { key: "revenue", label: "Revenue Analytics", icon: DollarSign },
   { key: "reports", label: "Reports", icon: FileText },
 ];
 
@@ -910,49 +913,6 @@ const AudienceAnalytics = () => {
     </div>
   );
 };
-
-const Reports = () => {
-  const [range, setRange] = useState("90D");
-  const [typeFilter, setTypeFilter] = useState("All types");
-  const filtered = typeFilter === "All types" ? reportsData : reportsData.filter((r) => r.type === typeFilter);
-  const readyCount = reportsData.filter((r) => r.status === "Ready").length;
-  return (
-    <div className="space-y-6">
-      <SectionHeader
-        eyebrow="Reports"
-        title="Reports"
-        subtitle={`${readyCount} reports ready to download, generated automatically each period.`}
-        action={
-          <div className="flex items-center gap-2">
-            <Filters
-              range={range} setRange={setRange}
-              typeFilter={typeFilter} setTypeFilter={setTypeFilter}
-              typeOptions={["All types", "Performance", "Audience", "Content", "Revenue"]}
-            />
-            <button className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-full text-white shrink-0" style={{ background: "var(--accent)" }}>
-              <FileText size={13} /> New Report
-            </button>
-          </div>
-        }
-      />
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="ad-card p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "var(--teal-soft)", color: "var(--teal)" }}><CheckCircle2 size={18} /></div>
-          <div><div className="text-lg font-display font-bold font-mono" style={{ color: "var(--ink)" }}>{readyCount}</div><div className="text-xs" style={{ color: "var(--muted)" }}>Ready to export</div></div>
-        </div>
-        <div className="ad-card p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "var(--amber-soft)", color: "var(--amber)" }}><Loader2 size={18} /></div>
-          <div><div className="text-lg font-display font-bold font-mono" style={{ color: "var(--ink)" }}>{reportsData.filter(r => r.status === "Processing").length}</div><div className="text-xs" style={{ color: "var(--muted)" }}>Processing</div></div>
-        </div>
-        <div className="ad-card p-4 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "var(--rose-soft)", color: "var(--rose)" }}><AlertCircle size={18} /></div>
-          <div><div className="text-lg font-display font-bold font-mono" style={{ color: "var(--ink)" }}>{reportsData.filter(r => r.status === "Failed").length}</div><div className="text-xs" style={{ color: "var(--muted)" }}>Failed — retry needed</div></div>
-        </div>
-      </div>
-      <ReportsTable data={filtered} />
-    </div>
-  );
-};
 const GrowthTrendDashboard = () => {
   return (
     <div className="space-y-6">
@@ -1020,6 +980,7 @@ const GrowthTrendDashboard = () => {
     </div>
   );
 };
+
 /* ============================================================
    APP ROOT
    ============================================================ */
@@ -1035,7 +996,8 @@ export default function AnalyticsDashboard() {
       case "content": return <ContentAnalytics />;
       case "audience": return <AudienceAnalytics />;
       case "growth": return <GrowthTrendDashboard />;
-      case "reports": return <Reports />;
+      case "revenue": return <RevenueDashboard />;
+      case "reports": return <ReportDashboard />;
       default: return <DashboardHome />;
     }
   };
