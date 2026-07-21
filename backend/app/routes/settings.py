@@ -17,6 +17,13 @@ from app.services.settings_service import (
     update_notification_settings,
     update_appearance_settings,
 )
+from app.services.settings_service import (
+    get_user_settings,
+    update_profile_settings,
+    update_security_settings,
+    update_notification_settings,
+    update_appearance_settings,
+)
 
 router = APIRouter()
 
@@ -56,3 +63,9 @@ def update_appearance(
 ):
     return update_appearance_settings(db, current_user.id, payload)
 
+@router.get("/settings")
+def get_settings(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return get_user_settings(db, current_user.id)

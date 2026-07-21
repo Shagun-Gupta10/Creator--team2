@@ -17,6 +17,8 @@ from app.routes.social import router as social_router
 from app.routes.instagram_auth import router as instagram_router
 from app.routes.instagram_api import router as instagram_api_router
 from app.routes.dashboard import router as dashboard_router
+from app.models.audience_history import AudienceHistory
+from app.routes import growth
 # Create tables if they don't exist yet
 Base.metadata.create_all(bind=engine, checkfirst=True)
 
@@ -47,6 +49,7 @@ app.include_router(social_router)
 app.include_router(instagram_router)
 app.include_router(instagram_api_router)
 app.include_router(dashboard_router)
+app.include_router(growth.router)
 @app.get("/")
 def home():
     return {"message": "Backend running successfully"}

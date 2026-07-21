@@ -9,13 +9,18 @@ from app.services.content_service import (
     get_platform_analytics,
     get_content_trends,
     compare_content,
+    update_content
 )
 from app.database import get_db
 from app.schemas.content_schema import ContentCreate
 from app.auth.oauth2 import get_current_user
 from app.auth.rbac import require_role
 from app.models.user import User
-
+from app.schemas.content_schema import (
+    ContentCreate,
+    ContentUpdate,
+)
+from typing import Optional
 router = APIRouter()
 
 @router.post("/content")
@@ -27,12 +32,33 @@ def add_content(
     return create_content(content, db, current_user)
 
 
+from typing import Optional
+
 @router.get("/content")
 def get_content(
+    platform: Optional[str] = None,
+    search: Optional[str] = None,
+    page: int = 1,
+    limit: int = 10,
+    sort_by: str = "created_at",
+    order: str = "desc",
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role(["creator", "agency", "marketing_team", "administrator"])),
+    current_user: User = Depends(
+        require_role(
+            ["creator", "agency", "marketing_team", "administrator"]
+        )
+    ),
 ):
-    return get_all_content(db, current_user)
+    return get_all_content(
+        db,
+        current_user,
+        platform,
+        search,
+        page,
+        limit,
+        sort_by,
+        order,
+    )
 
 
 from app.services.content_service import (
@@ -108,3 +134,25 @@ def compare_two_contents(
         current_user,
     )
 
+@router.put("/content/{content_id}")
+def edit_content(
+    content_id: int,
+    content: ContentUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role(
+            [
+                "creator",
+                "agency",
+                "marketing_team",
+                "administrator",
+            ]
+        )
+    ),
+):
+    return update_content(
+        content_id,
+        content,
+        db,
+        current_user,
+    )

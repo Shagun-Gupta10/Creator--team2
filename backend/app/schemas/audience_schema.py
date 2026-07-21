@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-
+from typing import Optional
 
 class AudienceCreate(BaseModel):
     country: str
@@ -10,6 +10,15 @@ class AudienceCreate(BaseModel):
 
     growth_rate: float = Field(..., ge=0)
 
+
+
+class AudienceUpdate(BaseModel):
+    country: Optional[str] = None
+    age_group: Optional[str] = None
+    gender: Optional[str] = None
+
+    followers: Optional[int] = Field(None, ge=0)
+    growth_rate: Optional[float] = Field(None, ge=0)
 
 class AudienceResponse(BaseModel):
     id: int

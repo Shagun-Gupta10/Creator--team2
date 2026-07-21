@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-from sqlalchemy import func
+from sqlalchemy import func, desc, asc
 from app.models.content import Content
 from app.models.user import User
 from app.auth.oauth2 import get_current_user
@@ -44,12 +44,59 @@ def create_content(content, db: Session, current_user: "User"):
     }
 
 
-def get_all_content(db: Session, current_user: "User"):
-    if current_user.role == "creator":
-        return db.query(Content).filter(Content.creator_id == current_user.id).all()
+def get_all_content(
+    db: Session,
+    current_user: User,
+    platform=None,
+    search=None,
+    page=1,
+    limit=10,
+    sort_by="created_at",
+    order="desc",
+):
+    query = db.query(Content)
 
-    # Non-creators (agency/marketing/admin) see global content in this MVP
-    return db.query(Content).all()
+    if current_user.role == "creator":
+        query = query.filter(Content.creator_id == current_user.id)
+
+    if platform:
+        query = query.filter(Content.platform == platform)
+
+    if search:
+        query = query.filter(Content.title.ilike(f"%{search}%"))
+
+    allowed_sort_fields = {
+        "views": Content.views,
+        "likes": Content.likes,
+        "comments": Content.comments,
+        "engagement_rate": Content.engagement_rate,
+        "created_at": Content.created_at,
+    }
+
+    sort_column = allowed_sort_fields.get(
+        sort_by,
+        Content.created_at,
+    )
+
+    if order.lower() == "asc":
+        query = query.order_by(asc(sort_column))
+    else:
+        query = query.order_by(desc(sort_column))
+
+    total = query.count()
+
+    results = (
+        query.offset((page - 1) * limit)
+        .limit(limit)
+        .all()
+    )
+
+    return {
+        "page": page,
+        "limit": limit,
+        "total": total,
+        "data": results,
+    }
 
 
 
@@ -67,39 +114,88 @@ def delete_content(content_id, db: Session, current_user: "User"):
 
     return {"message": "Content deleted successfully"}
 
-def get_content_analytics(db: Session, current_user: "User"):
+def get_content_analytics(db: Session, current_user: User):
 
     query = db.query(Content)
 
-    # Creators can only see their own analytics
     if current_user.role == "creator":
         query = query.filter(Content.creator_id == current_user.id)
 
     contents = query.all()
 
+    if not contents:
+        return {
+            "message": "No content available."
+        }
+
     total_posts = len(contents)
+
     total_views = sum(c.views or 0 for c in contents)
     total_likes = sum(c.likes or 0 for c in contents)
     total_comments = sum(c.comments or 0 for c in contents)
     total_shares = sum(c.shares or 0 for c in contents)
     total_reach = sum(c.reach or 0 for c in contents)
 
-    if total_posts:
-        average_engagement_rate = (
-            sum(c.engagement_rate or 0 for c in contents)
-            / total_posts
+    avg_views = total_views / total_posts
+    avg_likes = total_likes / total_posts
+    avg_comments = total_comments / total_posts
+
+    avg_engagement = (
+        sum(c.engagement_rate or 0 for c in contents)
+        / total_posts
+    )
+
+    best_post = max(
+        contents,
+        key=lambda c: c.engagement_rate or 0
+    )
+
+    worst_post = min(
+        contents,
+        key=lambda c: c.engagement_rate or 0
+    )
+
+    platform_distribution = {}
+
+    for content in contents:
+        platform_distribution[content.platform] = (
+            platform_distribution.get(content.platform, 0) + 1
         )
-    else:
-        average_engagement_rate = 0
 
     return {
-        "total_posts": total_posts,
-        "total_views": total_views,
-        "total_likes": total_likes,
-        "total_comments": total_comments,
-        "total_shares": total_shares,
-        "total_reach": total_reach,
-        "average_engagement_rate": round(average_engagement_rate, 2),
+        "summary": {
+            "total_posts": total_posts,
+            "total_views": total_views,
+            "total_likes": total_likes,
+            "total_comments": total_comments,
+            "total_shares": total_shares,
+            "total_reach": total_reach
+        },
+
+        "averages": {
+            "average_views": round(avg_views, 2),
+            "average_likes": round(avg_likes, 2),
+            "average_comments": round(avg_comments, 2),
+            "average_engagement_rate": round(avg_engagement, 2)
+        },
+
+        "best_post": {
+            "title": best_post.title,
+            "platform": best_post.platform,
+            "engagement_rate": round(best_post.engagement_rate, 2),
+            "views": best_post.views,
+            "likes": best_post.likes
+        },
+
+        "worst_post": {
+            "title": worst_post.title,
+            "platform": worst_post.platform,
+            "engagement_rate": round(worst_post.engagement_rate, 2),
+            "views": worst_post.views,
+            "likes": worst_post.likes
+        },
+
+        "platform_distribution": platform_distribution
     }
 
 def get_top_content(db: Session, current_user: "User"):
@@ -245,4 +341,52 @@ def compare_content(
             "reach": second.reach,
             "engagement_rate": second.engagement_rate,
         },
+    }
+
+def update_content(
+    content_id: int,
+    content_data,
+    db: Session,
+    current_user: User,
+):
+    content = db.query(Content).filter(Content.id == content_id).first()
+
+    if not content:
+        raise HTTPException(
+            status_code=404,
+            detail="Content not found"
+        )
+
+    if (
+        current_user.role == "creator"
+        and content.creator_id != current_user.id
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Not authorized to update this content"
+        )
+
+    update_data = content_data.model_dump(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(content, key, value)
+
+    if content.reach and content.reach > 0:
+        content.engagement_rate = (
+            (
+                content.likes
+                + content.comments
+                + content.shares
+            )
+            / content.reach
+        ) * 100
+    else:
+        content.engagement_rate = 0
+
+    db.commit()
+    db.refresh(content)
+
+    return {
+        "message": "Content updated successfully",
+        "content": content
     }

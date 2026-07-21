@@ -8,7 +8,7 @@ from app.auth.rbac import require_role
 from app.models.user import User
 from fastapi import APIRouter
 from app.services.dashboard_service import get_instagram_dashboard
-
+from app.services.dashboard_service import get_dashboard_data
 router = APIRouter()
 router = APIRouter(
     prefix="/dashboard",
@@ -25,3 +25,7 @@ def dashboard(
 @router.get("/instagram")
 def instagram_dashboard():
     return get_instagram_dashboard()
+
+@router.get("/")
+def dashboard():
+    return get_dashboard_data()

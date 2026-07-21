@@ -55,3 +55,27 @@ def update_appearance_settings(db: Session, user_id: int, payload):
     db.refresh(settings)
     return {"message": "Appearance settings updated"}
 
+def get_user_settings(db: Session, user_id: int):
+    settings = _get_or_create_settings(db, user_id)
+
+    return {
+        "profile": {
+            "bio": settings.bio,
+            "dateOfBirth": settings.date_of_birth,
+            "location": settings.location,
+            "website": settings.website
+        },
+        "security": {
+            "twoFactor": settings.two_factor,
+            "sessionTimeout": settings.session_timeout
+        },
+        "notifications": {
+            "productUpdates": settings.product_updates,
+            "weeklyDigest": settings.weekly_digest
+        },
+        "appearance": {
+            "accent": settings.accent,
+            "density": settings.density
+        },
+        "updatedAt": settings.updated_at
+    }
