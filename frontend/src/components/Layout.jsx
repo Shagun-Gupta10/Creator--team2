@@ -1,9 +1,8 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, Settings, LogOut } from 'lucide-react';
 
-import { clearAccessToken, getAccessToken, getProfile } from '../lib/api';
 import { applyThemeToDocument, getThemePreference, setThemePreference } from '../lib/theme';
-import { useEffect, useState } from 'react';
+import { useAuthContext } from '../context/AuthContext';
 import { canAccessRole } from '../lib/role';
 
 
@@ -14,8 +13,7 @@ import { canAccessRole } from '../lib/role';
 export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
+  const { user, loading, logout } = useAuthContext();
 
   // Apply theme once on load.
 
@@ -25,43 +23,19 @@ export default function Layout() {
     applyThemeToDocument(current);
   }
 
-
-  useEffect(() => {
-    let cancelled = false;
-    async function run() {
-      try {
-        setLoadingProfile(true);
-        const token = getAccessToken();
-        if (!token) {
-          if (!cancelled) setProfile(null);
-          return;
-        }
-        const p = await getProfile();
-        if (!cancelled) setProfile(p);
-      } catch {
-        if (!cancelled) setProfile(null);
-      } finally {
-        if (!cancelled) setLoadingProfile(false);
-      }
-    }
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const role = profile?.role;
+  const role = user?.role;
 
   const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, allowed: ['creator', 'agency', 'marketing_team', 'administrator'] },
-    { name: 'Content', path: '/content', icon: LayoutDashboard, allowed: ['creator', 'agency', 'marketing_team', 'administrator'] },
-    { name: 'Audience', path: '/audience', icon: Users, allowed: ['creator', 'agency', 'marketing_team', 'administrator'] },
-    { name: 'Settings', path: '/settings', icon: Settings, allowed: ['creator', 'agency', 'marketing_team', 'administrator'] },
-  ].filter((i) => (loadingProfile ? true : canAccessRole(role, i.allowed)));
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, allowed: ['creator', 'agency', 'marketing_team', 'administrator', 'member'] },
+    { name: 'Content', path: '/content', icon: LayoutDashboard, allowed: ['creator', 'agency', 'marketing_team', 'administrator', 'member'] },
+    { name: 'Team', path: '/team', icon: Users, allowed: ['creator'] },
+    { name: 'Audience', path: '/audience', icon: Users, allowed: ['creator', 'agency', 'marketing_team', 'administrator', 'member'] },
+    { name: 'Settings', path: '/settings', icon: Settings, allowed: ['creator', 'agency', 'marketing_team', 'administrator', 'member'] },
+  ].filter((i) => canAccessRole(role, i.allowed));
 
 
   function onLogout() {
-    clearAccessToken();
+    logout();
     navigate('/login', { replace: true });
   }
 
