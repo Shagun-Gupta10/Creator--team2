@@ -6,6 +6,7 @@ class ProfileSettingsUpdate(BaseModel):
     dateOfBirth: str = ""
     location: str = ""
     website: str = ""
+    role: str = ""
 
 
 class SecuritySettingsUpdate(BaseModel):

@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy.orm import Session
 
+from app.models.user import User
 from app.models.user_settings import UserSettings
 
 
@@ -16,11 +17,17 @@ def _get_or_create_settings(db: Session, user_id: int) -> UserSettings:
 
 def update_profile_settings(db: Session, user_id: int, payload):
     settings = _get_or_create_settings(db, user_id)
+    user = db.query(User).filter(User.id == user_id).first()
+
     settings.bio = payload.bio
     settings.date_of_birth = payload.dateOfBirth
     settings.location = payload.location
     settings.website = payload.website
     settings.updated_at = datetime.utcnow().isoformat()
+
+    if user is not None and payload.role:
+        user.role = payload.role
+
     db.commit()
     db.refresh(settings)
     return {"message": "Profile settings updated"}

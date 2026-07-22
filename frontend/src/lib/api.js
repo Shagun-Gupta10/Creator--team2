@@ -19,6 +19,24 @@ export async function getProfile() {
   return res.data;
 }
 
+export async function getProfileSettings() {
+  const res = await api.get('/settings/profile', { headers: authHeaders() });
+  return res.data;
+}
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error?.response?.status;
+    if (status === 401) {
+      clearAccessToken();
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export async function updateProfileSettings(payload) {
   const res = await api.put('/settings/profile', payload, { headers: authHeaders() });

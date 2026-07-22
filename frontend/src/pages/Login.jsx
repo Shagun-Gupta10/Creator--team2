@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
-import { loginUser, setAccessToken, getAccessToken, getProfile } from '../lib/api';
-
+import { loginUser, setAccessToken, getProfile } from '../lib/api';
+import { useAuthContext } from '../context/AuthContext';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { setUser } = useAuthContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [loggedInName, setLoggedInName] = useState('');
-
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -22,16 +22,16 @@ export default function Login() {
       const data = await loginUser({ email, password });
       setAccessToken(data.access_token);
 
-      try {
-        const profile = await getProfile();
-        setLoggedInName(profile?.name ? `${profile.name} (${profile.email})` : 'Logged in');
-      } catch {
-        setLoggedInName('Logged in');
+      const profile = await getProfile();
+      setUser(profile);
+      setLoggedInName(profile?.name ? `${profile.name} (${profile.email})` : 'Logged in');
+
+      if (profile?.role === 'member') {
+        navigate('/member-dashboard', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
       }
-
-      navigate('/dashboard', { replace: true });
     } catch (err) {
-
       const message = err?.response?.data?.detail || 'Login failed. Please check your credentials.';
       setError(message);
     } finally {

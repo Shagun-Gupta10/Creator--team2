@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.auth.oauth2 import get_current_user
 from app.models.user import User
+from app.models.user_settings import UserSettings
 from app.schemas.settings_schema import (
     ProfileSettingsUpdate,
     SecuritySettingsUpdate,
@@ -26,6 +27,27 @@ from app.services.settings_service import (
 )
 
 router = APIRouter()
+
+
+@router.get("/settings/profile")
+def get_profile_settings(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    settings = (
+        db.query(UserSettings)
+        .filter(UserSettings.user_id == current_user.id)
+        .first()
+    )
+    return {
+        "name": current_user.name,
+        "email": current_user.email,
+        "role": current_user.role,
+        "bio": settings.bio if settings else "",
+        "dateOfBirth": settings.date_of_birth if settings else "",
+        "location": settings.location if settings else "",
+        "website": settings.website if settings else "",
+    }
 
 
 @router.put("/settings/profile")

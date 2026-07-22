@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Shield, KeyRound, Bell, Palette, Save } from 'lucide-react';
 import {
   getAccessToken,
-  getProfile,
+  getProfileSettings,
   updateProfileSettings,
   updateSecuritySettings,
   updateNotificationSettings,
@@ -32,10 +32,12 @@ export default function Settings() {
   const [jwtSub, setJwtSub] = useState('');
   const [saveNotice, setSaveNotice] = useState('');
   const [saveLoading, setSaveLoading] = useState(false);
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
   const [profile, setProfile] = useState({
     name: 'Creator IQ User',
     email: 'creator@example.com',
+    role: 'creator',
     dateOfBirth: '1998-01-01',
     bio: 'Creator • Analytics enthusiast • Building in public.',
     location: 'Your City',
@@ -64,19 +66,27 @@ export default function Settings() {
     const sub = getJwtSubFromToken(token);
     setJwtSub(sub);
 
-    // Load user profile (name + email) from backend
-    (async () => {
+    async function loadProfileSettings() {
       try {
-        const profileRes = await getProfile();
+        const profileRes = await getProfileSettings();
         setProfile((p) => ({
           ...p,
           name: profileRes?.name || p.name,
           email: profileRes?.email || p.email,
+          role: profileRes?.role || p.role,
+          bio: profileRes?.bio || p.bio,
+          dateOfBirth: profileRes?.dateOfBirth || p.dateOfBirth,
+          location: profileRes?.location || p.location,
+          website: profileRes?.website || p.website,
         }));
       } catch {
         // ignore - keep defaults
+      } finally {
+        setProfileLoaded(true);
       }
-    })();
+    }
+
+    loadProfileSettings();
   }, []);
 
 
@@ -91,6 +101,7 @@ async function saveAll() {
         dateOfBirth: profile.dateOfBirth,
         location: profile.location,
         website: profile.website,
+        role: profile.role,
       });
 
       await updateSecuritySettings({
@@ -109,6 +120,18 @@ async function saveAll() {
       });
 
       setSaveNotice('Saved successfully');
+
+      const profileRes = await getProfileSettings();
+      setProfile((p) => ({
+        ...p,
+        name: profileRes?.name || p.name,
+        email: profileRes?.email || p.email,
+        role: profileRes?.role || p.role,
+        bio: profileRes?.bio || p.bio,
+        dateOfBirth: profileRes?.dateOfBirth || p.dateOfBirth,
+        location: profileRes?.location || p.location,
+        website: profileRes?.website || p.website,
+      }));
     } catch (err) {
       const message = err?.response?.data?.detail || 'Failed to save settings.';
       setSaveNotice(message);
@@ -205,6 +228,20 @@ async function saveAll() {
                 <div className="mt-2 text-xs text-muted">
                   Tip: Add your niche + what you’re building.
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm text-muted mb-2">Role</label>
+                <select
+                  value={profile.role}
+                  onChange={(e) => setProfile((p) => ({ ...p, role: e.target.value }))}
+                  className={`w-full rounded-xl border border-slate-700/60 bg-slate-800/40 px-3 py-2 text-text focus:outline-none focus:ring-2 ${accent.ring}`}
+                >
+                  <option value="creator">Creator</option>
+                  <option value="agency">Agency</option>
+                  <option value="marketing_team">Marketing Team</option>
+                  <option value="administrator">Administrator</option>
+                </select>
               </div>
 
               <div className="md:col-span-2">
