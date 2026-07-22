@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000',
+  // In development `VITE_API_BASE_URL` is set to `/api` and Vite proxies it to the backend.
+  // In production replace with the real backend URL (e.g. https://api.example.com)
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
 });
 
 export async function registerUser({ name, email, password, role }) {
