@@ -440,3 +440,106 @@ def update_content(
         "message": "Content updated successfully",
         "content": content
     }
+# Get Content By ID
+def get_content_by_id(content_id: int, db: Session):
+    content = db.query(Content).filter(Content.id == content_id).first()
+
+    if not content:
+        raise HTTPException(status_code=404, detail="Content not found")
+
+    return serialize_content(content)
+
+
+# Search Content
+def search_content(title: str, db: Session):
+    contents = (
+        db.query(Content)
+        .filter(Content.title.ilike(f"%{title}%"))
+        .all()
+    )
+
+    return [serialize_content(content) for content in contents]
+
+
+# Filter Content
+def filter_content(platform: str, db: Session):
+    contents = (
+        db.query(Content)
+        .filter(Content.platform == platform)
+        .all()
+    )
+
+    return [serialize_content(content) for content in contents]
+
+
+# Pagination
+def get_paginated_content(page: int, limit: int, db: Session):
+    offset = (page - 1) * limit
+
+    total = db.query(Content).count()
+
+    contents = (
+        db.query(Content)
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+    return {
+        "page": page,
+        "limit": limit,
+        "total": total,
+        "data": [serialize_content(content) for content in contents]
+    }
+
+
+# Dashboard
+def dashboard(db: Session):
+    total_posts = db.query(Content).count()
+
+    total_views = (
+        db.query(func.sum(Content.views))
+        .scalar() or 0
+    )
+
+    total_likes = (
+        db.query(func.sum(Content.likes))
+        .scalar() or 0
+    )
+
+    total_comments = (
+        db.query(func.sum(Content.comments))
+        .scalar() or 0
+    )
+
+    total_shares = (
+        db.query(func.sum(Content.shares))
+        .scalar() or 0
+    )
+
+    avg_engagement = (
+        db.query(func.avg(Content.engagement_rate))
+        .scalar() or 0
+    )
+
+    latest_posts = (
+        db.query(Content)
+        .order_by(Content.created_at.desc())
+        .limit(5)
+        .all()
+    )
+
+    return {
+        "summary": {
+            "total_posts": total_posts,
+            "total_views": total_views,
+            "total_likes": total_likes,
+            "total_comments": total_comments,
+            "total_shares": total_shares,
+            "average_engagement_rate": round(avg_engagement, 2)
+        },
+        "recent_posts": [
+            serialize_content(post)
+            for post in latest_posts
+        ]
+    }
