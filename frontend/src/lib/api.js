@@ -36,6 +36,13 @@ api.interceptors.response.use(
         window.location.href = '/login';
       }
     }
+
+    if (!error?.response) {
+      error.message = 'The server could not be reached. Check that the app is running and try again.';
+    } else if (status >= 500) {
+      error.message = 'The server is temporarily unavailable. Please try again in a moment.';
+    }
+
     return Promise.reject(error);
   }
 );
@@ -87,13 +94,94 @@ export async function createContent({ title, platform, views, likes }) {
   return res.data;
 }
 
-export async function listContents() {
-  const res = await api.get('/content', { headers: authHeaders() });
-  return res.data;
+export async function listContents(params = {}) {
+  const res = await api.get('/content', {
+    headers: authHeaders(),
+    params,
+  });
+  return res.data?.data ?? res.data;
 }
 
 export async function deleteContent(contentId) {
   const res = await api.delete(`/content/${contentId}`, { headers: authHeaders() });
+  return res.data;
+}
+
+export async function getAudienceAnalytics() {
+  const res = await api.get('/audience/analytics', { headers: authHeaders() });
+  return res.data;
+}
+
+export async function getAudienceDemographics() {
+  const res = await api.get('/audience/demographics', { headers: authHeaders() });
+  return res.data;
+}
+
+export async function getAudienceGrowth() {
+  const res = await api.get('/audience/growth', { headers: authHeaders() });
+  return res.data;
+}
+
+export async function getInstagramDashboard() {
+  const res = await api.get('/dashboard/instagram', { headers: authHeaders() });
+  return res.data;
+}
+
+export async function getDashboardSummary(period = '30d') {
+  const res = await api.get('/dashboard', {
+    headers: authHeaders(),
+    params: { period },
+  });
+  return res.data;
+}
+
+export async function getInstagramAnalytics() {
+  const res = await api.get('/instagram/analytics', { headers: authHeaders() });
+  return res.data;
+}
+
+export async function getInstagramPosts() {
+  const res = await api.get('/instagram/database-posts', { headers: authHeaders() });
+  return res.data;
+}
+
+export async function getInstagramTrends() {
+  const res = await api.get('/instagram/trends', { headers: authHeaders() });
+  return res.data;
+}
+
+export async function getSocialDashboard(platform = 'instagram') {
+  if (platform === 'instagram') return getInstagramDashboard();
+  throw new Error(`Unsupported social platform: ${platform}`);
+}
+
+export async function getSocialAnalytics(platform = 'instagram') {
+  if (platform === 'instagram') return getInstagramAnalytics();
+  throw new Error(`Unsupported social platform: ${platform}`);
+}
+
+export async function getSocialPosts(platform = 'instagram') {
+  if (platform === 'instagram') return getInstagramPosts();
+  throw new Error(`Unsupported social platform: ${platform}`);
+}
+
+export async function getSocialTrends(platform = 'instagram') {
+  if (platform === 'instagram') return getInstagramTrends();
+  throw new Error(`Unsupported social platform: ${platform}`);
+}
+
+export async function listTeamMembers() {
+  const res = await api.get('/team/', { headers: authHeaders() });
+  return res.data;
+}
+
+export async function createTeamMember(payload) {
+  const res = await api.post('/team/', payload, { headers: authHeaders() });
+  return res.data;
+}
+
+export async function deleteTeamMember(memberId) {
+  const res = await api.delete(`/team/${memberId}`, { headers: authHeaders() });
   return res.data;
 }
 

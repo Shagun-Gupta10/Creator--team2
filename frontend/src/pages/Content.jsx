@@ -18,6 +18,15 @@ export default function Content() {
   const { user } = useAuthContext();
   const canEdit = user?.role === 'creator';
 
+  if (user && user.role !== 'creator') {
+    return (
+      <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-8 text-center">
+        <h1 className="text-2xl font-semibold text-text">Access denied</h1>
+        <p className="mt-2 text-muted">Only creators can manage content.</p>
+      </div>
+    );
+  }
+
   const [form, setForm] = useState({
     title: '',
     platform: 'Instagram',

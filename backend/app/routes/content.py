@@ -42,6 +42,7 @@ def get_content(
     limit: int = 10,
     sort_by: str = "created_at",
     order: str = "desc",
+    period: str = "30d",
     db: Session = Depends(get_db),
     current_user: User = Depends(
         require_role(
@@ -58,6 +59,7 @@ def get_content(
         limit,
         sort_by,
         order,
+        period,
     )
 
 

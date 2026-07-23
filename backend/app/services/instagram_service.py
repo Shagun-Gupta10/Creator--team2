@@ -52,8 +52,8 @@ def get_posts():
     }
 
     response = requests.get(url, params=params)
+    return response.json()
 
-    return requests.get(url, params=params).json()
 def sync_posts():
     db: Session = SessionLocal()
 
@@ -124,6 +124,12 @@ def get_saved_posts():
                 "media_url": p.media_url,
                 "permalink": p.permalink,
                 "timestamp": p.timestamp,
+                "like_count": p.like_count,
+                "comments_count": p.comments_count,
+                "reach": p.reach,
+                "impressions": p.impressions,
+                "saved": p.saved,
+                "engagement_rate": p.engagement_rate,
             }
             for p in posts
         ]
@@ -138,10 +144,12 @@ def get_analytics():
         posts = db.query(InstagramPost).all()
 
         total_posts = len(posts)
-
         total_likes = sum(post.like_count for post in posts)
-
         total_comments = sum(post.comments_count for post in posts)
+        total_views = sum(post.reach or 0 for post in posts)
+
+        if total_views == 0:
+            total_views = sum((post.like_count or 0) + (post.comments_count or 0) for post in posts)
 
         avg_engagement = 0
 
@@ -169,6 +177,7 @@ def get_analytics():
 
         return {
             "total_posts": total_posts,
+            "total_views": total_views,
             "total_likes": total_likes,
             "total_comments": total_comments,
             "average_engagement": avg_engagement,

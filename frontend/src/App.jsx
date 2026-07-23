@@ -26,7 +26,14 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="content" element={<Content />} />
+            <Route
+              path="content"
+              element={
+                <RoleBasedRoute allowedRoles={['creator']}>
+                  <Content />
+                </RoleBasedRoute>
+              }
+            />
             <Route path="audience" element={<Audience />} />
             <Route path="settings" element={<Settings />} />
             <Route

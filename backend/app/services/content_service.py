@@ -4,8 +4,30 @@ from sqlalchemy import func, desc, asc
 from app.models.content import Content
 from app.models.user import User
 from app.auth.oauth2 import get_current_user
+from datetime import datetime, timedelta
 
 
+def _get_period_bounds(period: str | None = None):
+    if not period:
+        return None, None
+
+    key = (period or "30d").lower()
+    now = datetime.utcnow()
+
+    if key in {"7d", "7", "last7", "last7days"}:
+        return now - timedelta(days=7), now
+    if key in {"30d", "30", "last30", "last30days"}:
+        return now - timedelta(days=30), now
+    if key in {"90d", "90", "last90", "last90days"}:
+        return now - timedelta(days=90), now
+    if key in {"prev7d", "previous7d"}:
+        return now - timedelta(days=14), now - timedelta(days=7)
+    if key in {"prev30d", "previous30d"}:
+        return now - timedelta(days=60), now - timedelta(days=30)
+    if key in {"prev90d", "previous90d"}:
+        return now - timedelta(days=180), now - timedelta(days=90)
+
+    return None, None
 
 
 def create_content(content, db: Session, current_user: "User"):
@@ -44,6 +66,24 @@ def create_content(content, db: Session, current_user: "User"):
     }
 
 
+def serialize_content(content: Content):
+    return {
+        "id": content.id,
+        "title": content.title,
+        "platform": content.platform,
+        "views": content.views,
+        "likes": content.likes,
+        "comments": content.comments,
+        "shares": content.shares,
+        "saves": content.saves,
+        "watch_time": content.watch_time,
+        "reach": content.reach,
+        "engagement_rate": content.engagement_rate,
+        "created_at": content.created_at.isoformat() if content.created_at else None,
+        "creator_id": content.creator_id,
+    }
+
+
 def get_all_content(
     db: Session,
     current_user: User,
@@ -53,6 +93,7 @@ def get_all_content(
     limit=10,
     sort_by="created_at",
     order="desc",
+    period="30d",
 ):
     query = db.query(Content)
 
@@ -64,6 +105,12 @@ def get_all_content(
 
     if search:
         query = query.filter(Content.title.ilike(f"%{search}%"))
+
+    start_date, end_date = _get_period_bounds(period)
+    if start_date:
+        query = query.filter(Content.created_at >= start_date)
+    if end_date:
+        query = query.filter(Content.created_at < end_date)
 
     allowed_sort_fields = {
         "views": Content.views,
@@ -95,7 +142,7 @@ def get_all_content(
         "page": page,
         "limit": limit,
         "total": total,
-        "data": results,
+        "data": [serialize_content(item) for item in results],
     }
 
 

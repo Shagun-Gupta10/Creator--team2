@@ -121,6 +121,26 @@ export default function FilterDrawer({
             </section>
 
             <section>
+              <p className="text-sm font-semibold text-muted mb-3">Time range</p>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: '7d', label: '7D' },
+                  { value: '30d', label: '30D' },
+                  { value: '90d', label: '90D' },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => onChange?.({ ...values, period: option.value })}
+                    className={`rounded-xl border px-3 py-2 text-sm font-medium transition-colors ${values.period === option.value ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-300' : 'border-slate-700/50 bg-slate-900/20 text-text hover:bg-slate-800/40'}`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section>
               <button
                 type="button"
                 onClick={onReset}
