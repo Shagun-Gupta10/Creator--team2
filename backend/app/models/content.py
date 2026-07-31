@@ -16,12 +16,15 @@ class Content(Base):
         nullable=False
     )
 
+    # Content Information
     title = Column(String(255), nullable=False)
-    platform = Column(String(50))
+    thumbnail = Column(String(500), nullable=True)
+    platform = Column(String(50), nullable=False)
     content_type = Column(String(50))
     description = Column(Text)
     publish_date = Column(Date)
 
+    # Analytics Metrics
     views = Column(Integer, default=0)
     likes = Column(Integer, default=0)
     comments = Column(Integer, default=0)
@@ -33,4 +36,8 @@ class Content(Base):
 
     created_at = Column(DateTime, server_default=func.now())
 
-    creator = relationship("CreatorProfile", back_populates="contents")
+    # Relationship with CreatorProfile
+    creator = relationship(
+        "CreatorProfile",
+        back_populates="contents"
+    )

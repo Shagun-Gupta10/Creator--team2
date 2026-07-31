@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 # ----------------------------
 class ContentCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
+    thumbnail: Optional[str] = None
     platform: str = Field(..., min_length=2, max_length=50)
 
     creator_id: int
@@ -30,6 +31,7 @@ class ContentCreate(BaseModel):
 # ----------------------------
 class ContentUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=200)
+    thumbnail: Optional[str] = None
     platform: Optional[str] = Field(None, min_length=2, max_length=50)
 
     creator_id: Optional[int] = None
@@ -45,3 +47,31 @@ class ContentUpdate(BaseModel):
 
     watch_time: Optional[float] = Field(None, ge=0)
     reach: Optional[int] = Field(None, ge=0)
+
+
+# ----------------------------
+# Response Schema
+# ----------------------------
+class ContentResponse(BaseModel):
+    id: int
+    creator_id: int
+
+    title: str
+    thumbnail: Optional[str]
+    platform: str
+    content_type: Optional[str]
+    description: Optional[str]
+    publish_date: Optional[date]
+
+    views: int
+    likes: int
+    comments: int
+    shares: int
+    saves: int
+
+    watch_time: float
+    reach: int
+    engagement_rate: float
+
+    class Config:
+        from_attributes = True

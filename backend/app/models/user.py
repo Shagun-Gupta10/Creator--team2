@@ -15,9 +15,18 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     role = Column(String(30), nullable=False)
 
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    created_at = Column(
+        DateTime,
+        server_default=func.now()
+    )
 
+    updated_at = Column(
+        DateTime,
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+
+    # One-to-One relationship with CreatorProfile
     creator_profile = relationship(
         "CreatorProfile",
         back_populates="user",
