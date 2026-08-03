@@ -4,13 +4,18 @@ import ReportDashboard from "./reports/ReportDashboard";
 import AdminOverview from "./admin/AdminOverview";
 import UserManagement from "./admin/UserManagement";
 import SystemSettings from "./admin/SystemSettings";
-import AgencyOverview from "./agency/AgencyOverview";
+import AgencyDashboard from "./agency/AgencyDashboard";
 import CreatorsDashboard from "./agency/CreatorsDashboard";
 import CampaignDashboard from "./agency/CampaignDashboard";
 import MarketingOverview from "./Marketting/MarketingOverview";
 import CampaignAnalytics from "./Marketting/CampaignAnalytics";
 import AudienceInsights from "./Marketting/AudienceInsights";
+import MarkettingPerformance from "./Marketting/MarkettingPerformance";
+import MarketingReports from "./Marketting/MarketingReports";
 import AudienceAnalytics from "./audience/AudienceAnalytics";
+import SecurityAudit from "./admin/SecurityAudit";
+import AdminReports from "./admin/AdminReports";
+import AdminNotifications from "./admin/AdminNotifications";
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -22,7 +27,7 @@ import {
   Heart, MessageCircle, Share2, Clock, Download, Filter, Calendar,
   MoreHorizontal, ArrowUpRight, ArrowDownRight, Play, DollarSign,
   UserPlus, Globe, ChevronsUpDown, CheckCircle2, AlertCircle, Loader2,
-  Settings, Sparkles,Video,Award,BadgeDollarSign,IndianRupee,
+  Settings, Sparkles,Video,Award,BadgeDollarSign,IndianRupee,ShieldCheck,
 } from "lucide-react";
 /* ============================================================
    DESIGN TOKENS — injected once as global CSS custom properties
@@ -444,7 +449,17 @@ else if (userRole === "Marketing Team") {
     { key: "overview", label: "Overview", icon: LayoutGrid },
     { key: "campaigns", label: "Campaign Analytics", icon: BarChart3 },
     { key: "audience", label: "Audience Insights", icon: Users },
-    { key: "reports", label: "Reports", icon: FileText },
+    {
+  key: "performance",
+  label: "Performance",
+  icon: TrendingUp,
+},
+
+    {
+  key: "reports",
+  label: "Marketing Reports",
+  icon: FileText,
+},
   ];
 }
 
@@ -453,7 +468,21 @@ else if (userRole === "Administrator") {
     { key: "overview", label: "Overview", icon: LayoutGrid },
     { key: "users", label: "User Management", icon: Users },
     { key: "settings", label: "System Settings", icon: Settings },
-    { key: "reports", label: "Reports", icon: FileText },
+    {
+  key: "security-audit",
+  label: "Security & Audit",
+  icon: ShieldCheck,
+},
+  {
+  key: "admin-reports",
+  label: "Reports",
+  icon: FileText,
+},
+{
+  key: "admin-notifications",
+  label: "Notifications",
+  icon: Bell,
+}
   ];
 }
 /* ============================================================
@@ -1111,7 +1140,7 @@ const Sidebar = ({ active, setActive, collapsed, setCollapsed, mobileOpen, setMo
 /* ============================================================
    NAVBAR
    ============================================================ */
-const Navbar = ({ title, setMobileOpen }) => (
+const Navbar = ({globalSearch,setGlobalSearch,handleGlobalSearch,}) => {
   <header
     className="sticky top-0 z-30 flex items-center gap-3 px-4 md:px-7 h-16 shrink-0 backdrop-blur"
     style={{ background: "rgba(245,246,250,0.85)", borderBottom: "1px solid var(--border)" }}
@@ -1121,17 +1150,22 @@ const Navbar = ({ title, setMobileOpen }) => (
     </button>
 
     <div className="hidden md:block">
-      <h1 className="font-display text-base font-semibold" style={{ color: "var(--ink)" }}>{title}</h1>
+      <h1 className="font-display text-base font-semibold" style={{ color: "var(--ink)" }}>Dashboard</h1>
     </div>
 
     <div className="flex-1 flex justify-end md:justify-center">
       <div className="relative w-full max-w-sm hidden sm:block">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--muted)" }} />
-        <input
-          placeholder="Search analytics, reports, content…"
-          className="w-full pl-9 pr-3 py-2 rounded-full text-sm outline-none border"
-          style={{ borderColor: "var(--border)", background: "var(--surface)", color: "var(--ink)" }}
-        />
+      <input
+  type="text"
+  value={globalSearch}
+  onChange={(e) =>
+    setGlobalSearch(e.target.value)
+  }
+  onKeyDown={handleGlobalSearch}
+  placeholder="Search dashboard features..."
+  className="w-full bg-transparent outline-none text-sm"
+/>
       </div>
     </div>
 
@@ -1153,7 +1187,7 @@ const Navbar = ({ title, setMobileOpen }) => (
       </button>
     </div>
   </header>
-);
+};
 
 /* ============================================================
    PAGES
@@ -2360,6 +2394,477 @@ const GrowthTrendDashboard = () => {
   { period: "Aug 2", followers: 24812, views: 286000 },
 ],
 };
+// ==========================================
+// AGENCY DASHBOARD
+// ==========================================
+
+const AgencyDashboard = () => {
+  const [searchCreator, setSearchCreator] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const agencyGrowthData = [
+    { month: "Jan", creators: 18, campaigns: 10, revenue: 2.1 },
+    { month: "Feb", creators: 21, campaigns: 13, revenue: 2.6 },
+    { month: "Mar", creators: 24, campaigns: 16, revenue: 3.2 },
+    { month: "Apr", creators: 27, campaigns: 19, revenue: 3.8 },
+    { month: "May", creators: 31, campaigns: 23, revenue: 4.5 },
+    { month: "Jun", creators: 36, campaigns: 28, revenue: 5.2 },
+  ];
+
+  const campaignData = [
+    { name: "Beauty Launch", progress: 92, status: "Active" },
+    { name: "Tech Product", progress: 76, status: "Active" },
+    { name: "Fashion Week", progress: 100, status: "Completed" },
+    { name: "Food Promotion", progress: 48, status: "In Progress" },
+  ];
+
+  const creatorPerformance = [
+    {
+      name: "Ananya",
+      followers: "2.4M",
+      engagement: "8.9%",
+      revenue: "₹1.25L",
+    },
+    {
+      name: "Kavin",
+      followers: "1.8M",
+      engagement: "7.8%",
+      revenue: "₹98K",
+    },
+    {
+      name: "Priya",
+      followers: "1.3M",
+      engagement: "7.2%",
+      revenue: "₹82K",
+    },
+    {
+      name: "Arun",
+      followers: "950K",
+      engagement: "6.8%",
+      revenue: "₹67K",
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+
+      <SectionHeader
+        eyebrow="Agency Intelligence"
+        title="Agency Performance Dashboard"
+        subtitle="Monitor creators, campaigns, revenue and agency growth from one intelligent workspace."
+      />
+
+      {/* KPI CARDS */}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+
+        <div className="ad-card p-5 border-l-4 border-blue-600">
+          <p className="text-sm text-slate-500">
+            Total Creators
+          </p>
+
+          <h2 className="text-3xl font-bold mt-2">
+            36
+          </h2>
+
+          <p className="text-green-600 text-sm mt-2">
+            +16% this month
+          </p>
+        </div>
+
+        <div className="ad-card p-5 border-l-4 border-purple-600">
+          <p className="text-sm text-slate-500">
+            Active Campaigns
+          </p>
+
+          <h2 className="text-3xl font-bold mt-2">
+            28
+          </h2>
+
+          <p className="text-green-600 text-sm mt-2">
+            +8 new campaigns
+          </p>
+        </div>
+
+        <div className="ad-card p-5 border-l-4 border-emerald-600">
+          <p className="text-sm text-slate-500">
+            Agency Revenue
+          </p>
+
+          <h2 className="text-3xl font-bold mt-2">
+            ₹5.2L
+          </h2>
+
+          <p className="text-green-600 text-sm mt-2">
+            +24% growth
+          </p>
+        </div>
+
+        <div className="ad-card p-5 border-l-4 border-orange-500">
+          <p className="text-sm text-slate-500">
+            Campaign Success
+          </p>
+
+          <h2 className="text-3xl font-bold mt-2">
+            91%
+          </h2>
+
+          <p className="text-green-600 text-sm mt-2">
+            Above target
+          </p>
+        </div>
+
+      </div>
+
+
+      {/* GROWTH CHART */}
+
+      <div className="ad-card p-6">
+
+        <h2 className="text-xl font-bold">
+          Agency Growth Overview
+        </h2>
+
+        <p className="text-sm text-slate-500 mb-5">
+          Creator growth and campaign performance over time
+        </p>
+
+        <ResponsiveContainer
+          width="100%"
+          height={330}
+        >
+
+          <LineChart
+            data={agencyGrowthData}
+          >
+
+            <CartesianGrid
+              strokeDasharray="3 3"
+            />
+
+            <XAxis
+              dataKey="month"
+            />
+
+            <YAxis />
+
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#FFFFFF",
+                border: "1px solid #CBD5E1",
+                borderRadius: "12px",
+                color: "#0F172A"
+              }}
+            />
+
+            <Legend />
+
+            <Line
+              type="monotone"
+              dataKey="creators"
+              stroke="#2563EB"
+              strokeWidth={3}
+              name="Creators"
+            />
+
+            <Line
+              type="monotone"
+              dataKey="campaigns"
+              stroke="#9333EA"
+              strokeWidth={3}
+              name="Campaigns"
+            />
+
+          </LineChart>
+
+        </ResponsiveContainer>
+
+      </div>
+
+
+      {/* CAMPAIGN + CREATOR */}
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+
+        {/* CAMPAIGN TRACKER */}
+
+        <div className="ad-card p-6">
+
+          <h2 className="text-xl font-bold mb-5">
+            Campaign Progress
+          </h2>
+
+          <div className="space-y-5">
+
+            {campaignData.map(
+              (campaign, index) => (
+
+                <div key={index}>
+
+                  <div className="flex justify-between">
+
+                    <div>
+
+                      <p className="font-semibold">
+                        {campaign.name}
+                      </p>
+
+                      <p className="text-xs text-slate-500">
+                        {campaign.status}
+                      </p>
+
+                    </div>
+
+                    <span className="font-bold">
+                      {campaign.progress}%
+                    </span>
+
+                  </div>
+
+                  <div className="w-full h-2 bg-slate-200 rounded-full mt-2">
+
+                    <div
+                      className="h-2 bg-blue-600 rounded-full"
+                      style={{
+                        width:
+                          `${campaign.progress}%`
+                      }}
+                    />
+
+                  </div>
+
+                </div>
+
+              )
+            )}
+
+          </div>
+
+        </div>
+
+        {/* CREATOR SEARCH AND FILTER */}
+
+<div className="ad-card p-6">
+
+  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
+    <div>
+
+      <h2 className="text-2xl font-bold">
+        Creator Management
+      </h2>
+
+      <p className="text-base text-slate-500 mt-1">
+        Search and filter creators based on category.
+      </p>
+
+    </div>
+
+    <div className="flex flex-col sm:flex-row gap-3">
+
+      <input
+        type="text"
+        value={searchCreator}
+        onChange={(e) =>
+          setSearchCreator(e.target.value)
+        }
+        placeholder="Search creator..."
+        className="w-full sm:w-64 border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+      />
+
+      <select
+        value={selectedCategory}
+        onChange={(e) =>
+          setSelectedCategory(e.target.value)
+        }
+        className="border border-slate-300 rounded-xl px-4 py-3 bg-white"
+      >
+
+        <option value="All">
+          All Categories
+        </option>
+
+        <option value="Beauty & Lifestyle">
+          Beauty & Lifestyle
+        </option>
+
+        <option value="Technology">
+          Technology
+        </option>
+
+        <option value="Fashion">
+          Fashion
+        </option>
+
+        <option value="Food & Travel">
+          Food & Travel
+        </option>
+
+        <option value="Fitness">
+          Fitness
+        </option>
+
+      </select>
+
+    </div>
+
+  </div>
+
+</div>
+        {/* TOP CREATORS */}
+
+        <div className="ad-card p-6">
+
+          <h2 className="text-xl font-bold mb-5">
+            Top Creator Performance
+          </h2>
+
+          <div className="overflow-x-auto">
+
+            <table className="w-full">
+
+              <thead>
+
+                <tr className="border-b">
+
+                  <th className="text-left py-3">
+                    Creator
+                  </th>
+
+                  <th className="text-left">
+                    Followers
+                  </th>
+
+                  <th className="text-left">
+                    Engagement
+                  </th>
+
+                  <th className="text-left">
+                    Revenue
+                  </th>
+
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                {creatorPerformance.map(
+                  (creator, index) => (
+
+                    <tr
+                      key={index}
+                      className="border-b"
+                    >
+
+                      <td className="py-4 font-semibold">
+
+                        <div className="flex items-center gap-2">
+
+                          <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center">
+
+                            {creator.name[0]}
+
+                          </div>
+
+                          {creator.name}
+
+                        </div>
+
+                      </td>
+
+                      <td>
+                        {creator.followers}
+                      </td>
+
+                      <td className="text-green-600">
+                        {creator.engagement}
+                      </td>
+
+                      <td className="font-semibold">
+                        {creator.revenue}
+                      </td>
+
+                    </tr>
+
+                  )
+                )}
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      {/* AGENCY INSIGHTS */}
+
+      <div className="ad-card p-6">
+
+        <h2 className="text-xl font-bold mb-4">
+
+          🤖 AI Agency Insights
+
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+          <div className="border rounded-xl p-4">
+
+            <h3 className="font-semibold">
+              Best Creator
+            </h3>
+
+            <p className="text-sm text-slate-500 mt-2">
+
+              Ananya generated the highest
+              engagement and revenue this month.
+
+            </p>
+
+          </div>
+
+          <div className="border rounded-xl p-4">
+
+            <h3 className="font-semibold">
+              Campaign Opportunity
+            </h3>
+
+            <p className="text-sm text-slate-500 mt-2">
+
+              Technology campaigns show
+              strong audience growth.
+
+            </p>
+
+          </div>
+
+          <div className="border rounded-xl p-4">
+
+            <h3 className="font-semibold">
+              Revenue Forecast
+            </h3>
+
+            <p className="text-sm text-slate-500 mt-2">
+
+              Agency revenue may reach
+              ₹6.4L next month.
+
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+};
   const categoryData = [
     {
       category: "Technology",
@@ -2959,7 +3464,7 @@ const GrowthTrendDashboard = () => {
               🏆 Best Content Category
             </h3>
 
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-base text-slate-600">
               Technology content generates the highest average views and engagement.
             </p>
 
@@ -2971,7 +3476,7 @@ const GrowthTrendDashboard = () => {
               🚀 Fastest Growing Content
             </h3>
 
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-base text-slate-600">
               AI Tools Explained achieved 42% growth within the first 60 days.
             </p>
 
@@ -2983,7 +3488,7 @@ const GrowthTrendDashboard = () => {
               #️⃣ Most Effective Hashtag
             </h3>
 
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-base text-slate-600">
               #AI has the highest reach and a 9.2% engagement rate.
             </p>
 
@@ -2995,7 +3500,7 @@ const GrowthTrendDashboard = () => {
               📈 Overall Growth Trend
             </h3>
 
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-base text-slate-600">
               Your account shows consistent positive growth. Continue focusing on short-form technology content.
             </p>
 
@@ -3013,11 +3518,2346 @@ const GrowthTrendDashboard = () => {
    ============================================================ */
 export default function AnalyticsDashboard() {
   const [active, setActive] = useState("home");
+  const [globalSearch, setGlobalSearch] = useState("");
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+const handleGlobalSearch = (e) => {
+  if (e.key !== "Enter") return;
 
+  const search = globalSearch
+    .trim()
+    .toLowerCase();
+
+  if (!search) return;
+
+  if (
+    search.includes("overview") ||
+    search.includes("dashboard") ||
+    search.includes("home")
+  ) {
+    setActiveNav("overview");
+  } else if (
+    search.includes("campaign")
+  ) {
+    setActiveNav("campaigns");
+  } else if (
+    search.includes("audience")
+  ) {
+    setActiveNav("audience");
+  } else if (
+    search.includes("performance")
+  ) {
+    setActiveNav("performance");
+  } else if (
+    search.includes("report")
+  ) {
+    setActiveNav("reports");
+  } else if (
+    search.includes("revenue")
+  ) {
+    setActiveNav("revenue");
+  } else if (
+    search.includes("creator")
+  ) {
+    setActiveNav("creators");
+  } else if (
+    search.includes("user")
+  ) {
+    setActiveNav("users");
+  } else if (
+    search.includes("setting")
+  ) {
+    setActiveNav("settings");
+  } else {
+    alert(`No dashboard page found for "${globalSearch}"`);
+  }
+
+  setGlobalSearch("");
+};
   const pageTitle = NAV_ITEMS.find((n) => n.key === active)?.label || "Dashboard";
+  // ==========================================
+// AGENCY CREATORS DASHBOARD
+// ==========================================
 
+const AgencyCreatorsDashboard = () => {
+  const [searchCreator, setSearchCreator] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const creatorGrowthData = [
+    { month: "Jan", creators: 18, engagement: 6.2 },
+    { month: "Feb", creators: 21, engagement: 6.5 },
+    { month: "Mar", creators: 24, engagement: 6.9 },
+    { month: "Apr", creators: 28, engagement: 7.2 },
+    { month: "May", creators: 33, engagement: 7.6 },
+    { month: "Jun", creators: 36, engagement: 8.1 },
+  ];
+
+  const creators = [
+    {
+      name: "Ananya",
+      category: "Beauty & Lifestyle",
+      followers: "2.4M",
+      engagement: "8.9%",
+      reach: "1.8M",
+      performance: 96,
+      status: "Excellent",
+    },
+    {
+      name: "Kavin",
+      category: "Technology",
+      followers: "1.8M",
+      engagement: "8.2%",
+      reach: "1.4M",
+      performance: 92,
+      status: "Excellent",
+    },
+    {
+      name: "Priya",
+      category: "Fashion",
+      followers: "1.3M",
+      engagement: "7.5%",
+      reach: "980K",
+      performance: 84,
+      status: "Good",
+    },
+    {
+      name: "Arun",
+      category: "Food & Travel",
+      followers: "950K",
+      engagement: "6.8%",
+      reach: "760K",
+      performance: 76,
+      status: "Good",
+    },
+    {
+      name: "Divya",
+      category: "Fitness",
+      followers: "720K",
+      engagement: "5.9%",
+      reach: "580K",
+      performance: 90,
+      status: "Needs Attention",
+    },
+  ];
+  const filteredCreators = creators.filter((creator) => {
+  const matchesSearch = creator.name
+    .toLowerCase()
+    .includes(searchCreator.toLowerCase());
+
+  const matchesCategory =
+    selectedCategory === "All" ||
+    creator.category === selectedCategory;
+
+  return matchesSearch && matchesCategory;
+});
+  return (
+    <div className="space-y-6">
+
+      <SectionHeader
+        eyebrow="Creator Management"
+        title="Agency Creator Analytics"
+        subtitle="Monitor creator growth, engagement, reach and overall performance."
+      />
+      <div className="bg-red-500 text-white p-6 rounded-2xl text-2xl font-bold">
+  TEST – Agency Creator New Features Working
+</div>
+
+      {/* KPI CARDS */}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+
+        <div className="ad-card p-6 border-l-4 border-blue-600">
+          <p className="text-base text-slate-500">
+            Total Creators
+          </p>
+
+          <h2 className="text-3xl font-bold mt-2">
+            36
+          </h2>
+
+          <p className="text-green-600 mt-2">
+            +5 this month
+          </p>
+        </div>
+
+        <div className="ad-card p-6 border-l-4 border-green-600">
+          <p className="text-base text-slate-500">
+            Active Creators
+          </p>
+
+          <h2 className="text-3xl font-bold mt-2">
+            31
+          </h2>
+
+          <p className="text-green-600 mt-2">
+            86% active rate
+          </p>
+        </div>
+
+        <div className="ad-card p-6 border-l-4 border-purple-600">
+          <p className="text-base text-slate-500">
+            Average Engagement
+          </p>
+
+          <h2 className="text-3xl font-bold mt-2">
+            7.6%
+          </h2>
+
+          <p className="text-purple-600 mt-2">
+            +0.8% improvement
+          </p>
+        </div>
+
+        <div className="ad-card p-6 border-l-4 border-orange-500">
+          <p className="text-base text-slate-500">
+            New Creators
+          </p>
+
+          <h2 className="text-3xl font-bold mt-2">
+            5
+          </h2>
+
+          <p className="text-orange-600 mt-2">
+            Joined this month
+          </p>
+        </div>
+
+      </div>
+
+
+      {/* CREATOR GROWTH CHART */}
+
+      <div className="ad-card p-6">
+
+        <h2 className="text-2xl font-bold">
+          Creator Growth & Engagement
+        </h2>
+
+        <p className="text-base text-slate-500 mb-5">
+          Agency creator count and average engagement over time
+        </p>
+
+        <ResponsiveContainer
+          width="100%"
+          height={350}
+        >
+
+          <LineChart data={creatorGrowthData}>
+
+            <CartesianGrid
+              strokeDasharray="3 3"
+            />
+
+            <XAxis
+              dataKey="month"
+            />
+
+            <YAxis />
+
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#FFFFFF",
+                border: "1px solid #CBD5E1",
+                borderRadius: "12px",
+                color: "#0F172A",
+                fontSize: "14px",
+              }}
+            />
+
+            <Legend />
+
+            <Line
+              type="monotone"
+              dataKey="creators"
+              stroke="#2563EB"
+              strokeWidth={3}
+              name="Creators"
+            />
+
+            <Line
+              type="monotone"
+              dataKey="engagement"
+              stroke="#9333EA"
+              strokeWidth={3}
+              name="Engagement %"
+            />
+
+          </LineChart>
+
+        </ResponsiveContainer>
+
+      </div>
+
+
+      {/* TOP CREATORS */}
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+        <div className="ad-card p-6 xl:col-span-2">
+
+          <h2 className="text-2xl font-bold mb-5">
+            Creator Performance
+          </h2>
+
+          <div className="overflow-x-auto">
+
+            <table className="w-full text-base">
+
+              <thead>
+
+                <tr className="border-b bg-slate-50">
+
+                  <th className="text-left p-4">
+                    Creator
+                  </th>
+
+                  <th className="text-left p-4">
+                    Category
+                  </th>
+
+                  <th className="text-left p-4">
+                    Followers
+                  </th>
+
+                  <th className="text-left p-4">
+                    Engagement
+                  </th>
+
+                  <th className="text-left p-4">
+                    Reach
+                  </th>
+
+                  <th className="text-left p-4">
+                    Status
+                  </th>
+
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                {filteredCreators.map((creator, index) => (
+
+                  <tr
+                    key={index}
+                    className="border-b hover:bg-slate-50"
+                  >
+
+                    <td className="p-4">
+
+                      <div className="flex items-center gap-3">
+
+                        <div className="w-11 h-11 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+
+                          {creator.name[0]}
+
+                        </div>
+
+                        <span className="font-semibold">
+
+                          {creator.name}
+
+                        </span>
+
+                      </div>
+
+                    </td>
+
+                    <td className="p-4">
+
+                      {creator.category}
+
+                    </td>
+
+                    <td className="p-4 font-semibold">
+
+                      {creator.followers}
+
+                    </td>
+
+                    <td className="p-4 text-green-600 font-semibold">
+
+                      {creator.engagement}
+
+                    </td>
+
+                    <td className="p-4">
+
+                      {creator.reach}
+
+                    </td>
+                    <td className="p-4">
+  <div className="min-w-[110px]">
+    <div className="flex items-center justify-between mb-1">
+      <span className="text-sm font-semibold text-slate-700">
+        {creator.performance}%
+      </span>
+    </div>
+
+    <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+      <div
+        className={
+          creator.performance >= 80
+            ? "h-full bg-green-500 rounded-full"
+            : creator.performance >= 60
+            ? "h-full bg-blue-500 rounded-full"
+            : "h-full bg-orange-500 rounded-full"
+        }
+        style={{
+          width: `${creator.performance}%`,
+        }}
+      />
+    </div>
+  </div>
+</td>
+
+                    <td className="p-4">
+
+                      <span
+                        className={
+                          creator.status === "Excellent"
+                            ? "px-3 py-1 rounded-full bg-green-100 text-green-700"
+                            : creator.status === "Good"
+                            ? "px-3 py-1 rounded-full bg-blue-100 text-blue-700"
+                            : "px-3 py-1 rounded-full bg-red-100 text-red-700"
+                        }
+                      >
+
+                        {creator.status}
+
+                      </span>
+
+                    </td>
+
+                  </tr>
+
+                ))}
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+
+        {/* AI INSIGHTS */}
+
+        <div className="ad-card p-6">
+
+          <h2 className="text-2xl font-bold mb-5">
+
+            🤖 Creator Insights
+
+          </h2>
+
+          <div className="space-y-5">
+
+            <div className="border rounded-xl p-4">
+
+              <p className="font-bold">
+
+                Top Performer
+
+              </p>
+
+              <p className="text-base text-slate-500 mt-2">
+
+                Ananya has the highest engagement
+                rate at 8.9%.
+
+              </p>
+
+            </div>
+
+            <div className="border rounded-xl p-4">
+
+              <p className="font-bold">
+
+                Growth Opportunity
+
+              </p>
+
+              <p className="text-base text-slate-500 mt-2">
+
+                Technology creators show the
+                fastest audience growth.
+
+              </p>
+
+            </div>
+
+            <div className="border rounded-xl p-4">
+
+              <p className="font-bold">
+
+                Attention Required
+
+              </p>
+
+              <p className="text-base text-slate-500 mt-2">
+
+                Divya's engagement dropped.
+                Consider improving posting time.
+
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+             {/* ========================================== */}
+      {/* CREATOR CATEGORY PERFORMANCE */}
+      {/* ========================================== */}
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+        <div className="ad-card p-6">
+
+          <h2 className="text-2xl font-bold">
+            Content Category Performance
+          </h2>
+
+          <p className="text-base text-slate-500 mb-5">
+            Compare creator performance across content categories
+          </p>
+
+          <ResponsiveContainer width="100%" height={330}>
+
+            <BarChart
+              data={[
+                {
+                  category: "Beauty",
+                  engagement: 8.9,
+                  reach: 1.8,
+                },
+                {
+                  category: "Technology",
+                  engagement: 8.2,
+                  reach: 1.4,
+                },
+                {
+                  category: "Fashion",
+                  engagement: 7.5,
+                  reach: 0.98,
+                },
+                {
+                  category: "Food",
+                  engagement: 6.8,
+                  reach: 0.76,
+                },
+                {
+                  category: "Fitness",
+                  engagement: 5.9,
+                  reach: 0.58,
+                },
+              ]}
+            >
+
+              <CartesianGrid
+                strokeDasharray="3 3"
+              />
+
+              <XAxis
+                dataKey="category"
+              />
+
+              <YAxis />
+
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#FFFFFF",
+                  border: "1px solid #CBD5E1",
+                  borderRadius: "12px",
+                  color: "#0F172A",
+                }}
+              />
+
+              <Legend />
+
+              <Bar
+                dataKey="engagement"
+                name="Engagement %"
+                fill="#2563EB"
+                radius={[8, 8, 0, 0]}
+              />
+
+              <Bar
+                dataKey="reach"
+                name="Reach (Millions)"
+                fill="#8B5CF6"
+                radius={[8, 8, 0, 0]}
+              />
+
+            </BarChart>
+
+          </ResponsiveContainer>
+
+        </div>
+
+
+        {/* CREATOR STATUS */}
+
+        <div className="ad-card p-6">
+
+          <h2 className="text-2xl font-bold">
+            Creator Status Overview
+          </h2>
+
+          <p className="text-base text-slate-500 mb-6">
+            Current performance status of agency creators
+          </p>
+
+          <div className="space-y-5">
+
+            <div>
+
+              <div className="flex justify-between mb-2">
+
+                <span className="font-semibold">
+                  Excellent
+                </span>
+
+                <span className="font-bold text-green-600">
+                  2 Creators
+                </span>
+
+              </div>
+
+              <div className="w-full bg-slate-200 rounded-full h-3">
+
+                <div
+                  className="bg-green-500 h-3 rounded-full"
+                  style={{ width: "40%" }}
+                />
+
+              </div>
+
+            </div>
+
+
+            <div>
+
+              <div className="flex justify-between mb-2">
+
+                <span className="font-semibold">
+                  Good
+                </span>
+
+                <span className="font-bold text-blue-600">
+                  2 Creators
+                </span>
+
+              </div>
+
+              <div className="w-full bg-slate-200 rounded-full h-3">
+
+                <div
+                  className="bg-blue-500 h-3 rounded-full"
+                  style={{ width: "40%" }}
+                />
+
+              </div>
+
+            </div>
+
+
+            <div>
+
+              <div className="flex justify-between mb-2">
+
+                <span className="font-semibold">
+                  Needs Attention
+                </span>
+
+                <span className="font-bold text-red-600">
+                  1 Creator
+                </span>
+
+              </div>
+
+              <div className="w-full bg-slate-200 rounded-full h-3">
+
+                <div
+                  className="bg-red-500 h-3 rounded-full"
+                  style={{ width: "20%" }}
+                />
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div className="mt-8 border rounded-2xl p-5 bg-slate-50">
+
+            <p className="font-bold text-lg">
+
+              📊 Agency Health Score
+
+            </p>
+
+            <div className="flex items-end gap-3 mt-3">
+
+              <h2 className="text-5xl font-bold text-blue-700">
+
+                91
+
+              </h2>
+
+              <span className="text-slate-500 mb-2">
+
+                / 100
+
+              </span>
+
+            </div>
+
+            <p className="text-green-600 font-semibold mt-2">
+
+              Excellent agency performance
+
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      {/* ========================================== */}
+      {/* CREATOR MANAGEMENT ACTIONS */}
+      {/* ========================================== */}
+
+      <div className="ad-card p-6">
+
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+          <div>
+
+            <h2 className="text-2xl font-bold">
+
+              Creator Management Center
+
+            </h2>
+
+            <p className="text-base text-slate-500 mt-1">
+
+              Monitor creator activity and manage agency operations.
+
+            </p>
+
+          </div>
+
+          <button
+            className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-xl font-semibold"
+          >
+
+            + Add New Creator
+
+          </button>
+
+        </div>
+
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
+
+          <div className="border rounded-2xl p-5">
+
+            <h3 className="font-bold text-lg">
+
+              📅 Upcoming Reviews
+
+            </h3>
+
+            <p className="text-3xl font-bold mt-3">
+
+              8
+
+            </p>
+
+            <p className="text-slate-500">
+
+              Creator performance reviews
+
+            </p>
+
+          </div>
+
+
+          <div className="border rounded-2xl p-5">
+
+            <h3 className="font-bold text-lg">
+
+              🤝 Campaign Assignments
+
+            </h3>
+
+            <p className="text-3xl font-bold mt-3">
+
+              14
+
+            </p>
+
+            <p className="text-slate-500">
+
+              Active creator campaigns
+
+            </p>
+
+          </div>
+
+
+          <div className="border rounded-2xl p-5">
+
+            <h3 className="font-bold text-lg">
+
+              🔔 Pending Actions
+
+            </h3>
+
+            <p className="text-3xl font-bold mt-3">
+
+              5
+
+            </p>
+
+            <p className="text-slate-500">
+
+              Tasks requiring attention
+
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  );
+};
+// ==========================================
+// AGENCY CAMPAIGNS DASHBOARD
+// ==========================================
+
+const AgencyCampaignsDashboard = () => {
+  const campaignPerformanceData = [
+  {
+    month: "Jan",
+    reach: 120,
+    engagement: 5.8,
+    conversions: 420,
+  },
+  {
+    month: "Feb",
+    reach: 145,
+    engagement: 6.4,
+    conversions: 510,
+  },
+  {
+    month: "Mar",
+    reach: 168,
+    engagement: 6.9,
+    conversions: 620,
+  },
+  {
+    month: "Apr",
+    reach: 195,
+    engagement: 7.3,
+    conversions: 740,
+  },
+  {
+    month: "May",
+    reach: 230,
+    engagement: 8.1,
+    conversions: 890,
+  },
+  {
+    month: "Jun",
+    reach: 275,
+    engagement: 8.7,
+    conversions: 1080,
+  },
+];
+  const campaignData = [
+    { month: "Jan", reach: 1.2, engagement: 6.1 },
+    { month: "Feb", reach: 1.6, engagement: 6.8 },
+    { month: "Mar", reach: 2.1, engagement: 7.2 },
+    { month: "Apr", reach: 2.5, engagement: 7.8 },
+    { month: "May", reach: 3.1, engagement: 8.4 },
+    { month: "Jun", reach: 3.8, engagement: 9.1 },
+  ];
+
+  const campaigns = [
+    {
+      brand: "Glow Beauty",
+      campaign: "Summer Glow 2026",
+      creators: 8,
+      budget: "₹4.5L",
+      reach: "2.1M",
+      status: "Active",
+    },
+    {
+      brand: "TechNova",
+      campaign: "Smart Device Launch",
+      creators: 6,
+      budget: "₹3.8L",
+      reach: "1.7M",
+      status: "Active",
+    },
+    {
+      brand: "StyleHub",
+      campaign: "Monsoon Fashion",
+      creators: 5,
+      budget: "₹2.9L",
+      reach: "1.2M",
+      status: "Scheduled",
+    },
+    {
+      brand: "FitLife",
+      campaign: "Fitness Challenge",
+      creators: 4,
+      budget: "₹2.2L",
+      reach: "980K",
+      status: "Completed",
+    },
+  ];
+const campaignTableData = [
+  {
+    name: "Beauty Launch",
+    brand: "Glow Beauty",
+    creator: "Ananya",
+    budget: "₹4.5L",
+    spent: "₹3.8L",
+    reach: "2.8M",
+    engagement: "9.2%",
+    roi: "218%",
+    progress: 92,
+    status: "Active",
+  },
+  {
+    name: "Tech Product Launch",
+    brand: "TechNova",
+    creator: "Kavin",
+    budget: "₹3.8L",
+    spent: "₹2.9L",
+    reach: "2.1M",
+    engagement: "8.4%",
+    roi: "196%",
+    progress: 76,
+    status: "Active",
+  },
+  {
+    name: "Fashion Week",
+    brand: "StyleHub",
+    creator: "Priya",
+    budget: "₹5.2L",
+    spent: "₹5.2L",
+    reach: "3.6M",
+    engagement: "10.1%",
+    roi: "245%",
+    progress: 100,
+    status: "Completed",
+  },
+  {
+    name: "Food Promotion",
+    brand: "TasteBox",
+    creator: "Arun",
+    budget: "₹2.7L",
+    spent: "₹1.4L",
+    reach: "1.2M",
+    engagement: "5.8%",
+    roi: "112%",
+    progress: 48,
+    status: "In Progress",
+  },
+];
+const budgetData = [
+  {
+    title: "Total Campaign Budget",
+    value: "₹16.2L",
+    subtitle: "Allocated across 24 campaigns",
+    percentage: 100,
+    color: "bg-blue-600",
+  },
+  {
+    title: "Budget Used",
+    value: "₹11.8L",
+    subtitle: "72.8% of total budget",
+    percentage: 73,
+    color: "bg-purple-600",
+  },
+  {
+    title: "Remaining Budget",
+    value: "₹4.4L",
+    subtitle: "Available for active campaigns",
+    percentage: 27,
+    color: "bg-emerald-600",
+  },
+];
+
+const campaignAlerts = [
+  {
+    title: "Budget Alert",
+    message: "Beauty Launch has used 90% of its allocated budget.",
+    type: "warning",
+  },
+  {
+    title: "Approval Pending",
+    message: "Tech Product campaign content is waiting for approval.",
+    type: "info",
+  },
+  {
+    title: "Campaign Ending",
+    message: "Food Promotion ends in 3 days.",
+    type: "danger",
+  },
+];
+
+const upcomingCampaigns = [
+  {
+    name: "Summer Fashion Campaign",
+    brand: "StyleHub",
+    date: "Aug 08",
+    status: "Content Review",
+  },
+  {
+    name: "AI Product Launch",
+    brand: "TechNova",
+    date: "Aug 12",
+    status: "Creator Assignment",
+  },
+  {
+    name: "Healthy Food Promotion",
+    brand: "TasteBox",
+    date: "Aug 18",
+    status: "Scheduled",
+  },
+];
+const creatorMatches = [
+  {
+    creator: "Ananya",
+    category: "Beauty & Lifestyle",
+    campaign: "Beauty Launch",
+    audienceMatch: 96,
+    expectedReach: "2.8M",
+    expectedEngagement: "9.2%",
+    score: "Excellent Match",
+  },
+  {
+    creator: "Kavin",
+    category: "Technology",
+    campaign: "AI Product Launch",
+    audienceMatch: 93,
+    expectedReach: "2.3M",
+    expectedEngagement: "8.6%",
+    score: "Excellent Match",
+  },
+  {
+    creator: "Priya",
+    category: "Fashion",
+    campaign: "Summer Fashion",
+    audienceMatch: 89,
+    expectedReach: "1.9M",
+    expectedEngagement: "7.8%",
+    score: "Strong Match",
+  },
+];
+
+const roiRanking = [
+  {
+    rank: 1,
+    campaign: "Fashion Week",
+    revenue: "₹12.7L",
+    roi: "245%",
+    growth: "+32%",
+  },
+  {
+    rank: 2,
+    campaign: "Beauty Launch",
+    revenue: "₹9.8L",
+    roi: "218%",
+    growth: "+26%",
+  },
+  {
+    rank: 3,
+    campaign: "Tech Product Launch",
+    revenue: "₹7.4L",
+    roi: "196%",
+    growth: "+18%",
+  },
+];
+  return (
+     <div className="space-y-6">
+      {/* CAMPAIGN KPI CARDS */}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+
+        <div className="ad-card p-6 border-l-4 border-blue-600">
+
+          <p className="text-base text-slate-500">
+            Total Campaigns
+          </p>
+
+          <h2 className="text-3xl font-bold mt-2">
+            24
+          </h2>
+
+          <p className="text-green-600 mt-2">
+            +4 this month
+          </p>
+
+      </div>
+      <div className="ad-card p-6 border-l-4 border-green-600">
+
+        <p className="text-base text-slate-500">
+          Active Campaigns
+        </p>
+
+    <h2 className="text-3xl font-bold mt-2">
+      12
+    </h2>
+
+    <p className="text-green-600 mt-2">
+      50% currently active
+    </p>
+
+  </div>
+
+
+  <div className="ad-card p-6 border-l-4 border-purple-600">
+
+    <p className="text-base text-slate-500">
+      Average ROI
+    </p>
+
+    <h2 className="text-3xl font-bold mt-2">
+      184%
+    </h2>
+
+    <p className="text-purple-600 mt-2">
+      +22% from last month
+    </p>
+
+  </div>
+
+
+  <div className="ad-card p-6 border-l-4 border-orange-500">
+
+    <p className="text-base text-slate-500">
+      Campaign Revenue
+    </p>
+
+    <h2 className="text-3xl font-bold mt-2">
+      ₹18.6L
+    </h2>
+
+    <p className="text-orange-600 mt-2">
+      +31% growth
+    </p>
+
+  </div>
+
+</div>
+    <div className="space-y-6">
+
+      <SectionHeader
+        eyebrow="Campaign Management"
+        title="Agency Campaign Analytics"
+        subtitle="Track campaign performance, budget, creators and brand results."
+      />
+
+
+      {/* KPI CARDS */}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+
+        <div className="ad-card p-6 border-l-4 border-blue-600">
+
+          <p className="text-base text-slate-500">
+            Active Campaigns
+          </p>
+
+          <h2 className="text-3xl font-bold mt-2">
+            12
+          </h2>
+
+          <p className="text-green-600 mt-2">
+            +3 this month
+          </p>
+
+        </div>
+
+
+        <div className="ad-card p-6 border-l-4 border-purple-600">
+
+          <p className="text-base text-slate-500">
+            Total Campaign Reach
+          </p>
+
+          <h2 className="text-3xl font-bold mt-2">
+            8.6M
+          </h2>
+
+          <p className="text-purple-600 mt-2">
+            +24% growth
+          </p>
+
+        </div>
+
+
+        <div className="ad-card p-6 border-l-4 border-green-600">
+
+          <p className="text-base text-slate-500">
+            Campaign Engagement
+          </p>
+
+          <h2 className="text-3xl font-bold mt-2">
+            8.4%
+          </h2>
+
+          <p className="text-green-600 mt-2">
+            Above target
+          </p>
+
+        </div>
+
+
+        <div className="ad-card p-6 border-l-4 border-orange-500">
+
+          <p className="text-base text-slate-500">
+            Campaign Budget
+          </p>
+
+          <h2 className="text-3xl font-bold mt-2">
+            ₹18.6L
+          </h2>
+
+          <p className="text-orange-600 mt-2">
+            76% utilized
+          </p>
+
+        </div>
+
+      </div>
+      {/* CAMPAIGN PERFORMANCE ANALYTICS */}
+
+<div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+  {/* PERFORMANCE CHART */}
+
+  <div className="ad-card p-6 xl:col-span-2">
+
+    <div className="flex items-center justify-between mb-5">
+
+      <div>
+
+        <h2 className="text-2xl font-bold">
+          Campaign Performance Trend
+        </h2>
+
+        <p className="text-sm text-slate-500 mt-1">
+          Reach, engagement and conversions over the last 6 months
+        </p>
+
+      </div>
+
+      <span className="px-3 py-2 rounded-lg bg-blue-50 text-blue-700 text-sm font-semibold">
+        Last 6 Months
+      </span>
+
+    </div>
+
+    <ResponsiveContainer
+      width="100%"
+      height={330}
+    >
+
+      <LineChart
+        data={campaignPerformanceData}
+      >
+
+        <CartesianGrid
+          strokeDasharray="3 3"
+          vertical={false}
+        />
+
+        <XAxis
+          dataKey="month"
+        />
+
+        <YAxis />
+
+        <Tooltip
+          contentStyle={{
+            backgroundColor: "#FFFFFF",
+            border: "1px solid #CBD5E1",
+            borderRadius: "12px",
+            color: "#0F172A",
+          }}
+        />
+
+        <Legend />
+
+        <Line
+          type="monotone"
+          dataKey="reach"
+          stroke="#2563EB"
+          strokeWidth={3}
+          name="Reach (K)"
+          dot={{
+            r: 4,
+          }}
+        />
+
+        <Line
+          type="monotone"
+          dataKey="engagement"
+          stroke="#9333EA"
+          strokeWidth={3}
+          name="Engagement %"
+          dot={{
+            r: 4,
+          }}
+        />
+
+        <Line
+          type="monotone"
+          dataKey="conversions"
+          stroke="#059669"
+          strokeWidth={3}
+          name="Conversions"
+          dot={{
+            r: 4,
+          }}
+        />
+
+      </LineChart>
+
+    </ResponsiveContainer>
+
+  </div>
+
+
+  {/* AI CAMPAIGN INSIGHTS */}
+
+  <div className="ad-card p-6">
+
+    <div className="flex items-center justify-between mb-5">
+
+      <div>
+
+        <h2 className="text-xl font-bold">
+          🤖 AI Campaign Insights
+        </h2>
+
+        <p className="text-sm text-slate-500 mt-1">
+          Smart performance recommendations
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div className="space-y-4">
+
+      <div className="border border-green-200 bg-green-50 rounded-xl p-4">
+
+        <p className="font-bold text-green-800">
+          Top Campaign
+        </p>
+
+        <p className="text-sm text-green-700 mt-2">
+          Beauty Launch achieved 92% of its target
+          with the highest engagement rate.
+        </p>
+
+      </div>
+
+
+      <div className="border border-blue-200 bg-blue-50 rounded-xl p-4">
+
+        <p className="font-bold text-blue-800">
+          Growth Opportunity
+        </p>
+
+        <p className="text-sm text-blue-700 mt-2">
+          Short-form video campaigns are generating
+          28% more reach this month.
+        </p>
+
+      </div>
+
+
+      <div className="border border-orange-200 bg-orange-50 rounded-xl p-4">
+
+        <p className="font-bold text-orange-800">
+          Action Required
+        </p>
+
+        <p className="text-sm text-orange-700 mt-2">
+          Food Promotion is below its expected
+          engagement target.
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+      {/* CAMPAIGN PERFORMANCE CHART */}
+
+      <div className="ad-card p-6">
+
+        <h2 className="text-2xl font-bold">
+          Campaign Reach & Engagement
+        </h2>
+
+        <p className="text-base text-slate-500 mb-5">
+          Monthly campaign performance trend
+        </p>
+
+        <ResponsiveContainer
+          width="100%"
+          height={350}
+        >
+
+          <LineChart data={campaignData}>
+
+            <CartesianGrid
+              strokeDasharray="3 3"
+            />
+
+            <XAxis dataKey="month" />
+
+            <YAxis />
+
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#FFFFFF",
+                border: "1px solid #CBD5E1",
+                borderRadius: "12px",
+                color: "#0F172A",
+              }}
+            />
+
+            <Legend />
+
+            <Line
+              type="monotone"
+              dataKey="reach"
+              name="Reach (Millions)"
+              stroke="#2563EB"
+              strokeWidth={3}
+            />
+
+            <Line
+              type="monotone"
+              dataKey="engagement"
+              name="Engagement %"
+              stroke="#9333EA"
+              strokeWidth={3}
+            />
+
+          </LineChart>
+
+        </ResponsiveContainer>
+
+      </div>
+
+
+      {/* CAMPAIGN TABLE */}
+
+      <div className="ad-card p-6">
+
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+
+          <div>
+
+            <h2 className="text-2xl font-bold">
+              Campaign Performance
+            </h2>
+
+            <p className="text-base text-slate-500">
+              Monitor brand campaigns and creator assignments
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-xl font-semibold"
+          >
+            + Create Campaign
+          </button>
+
+        </div>
+
+
+        <div className="overflow-x-auto">
+
+          <table className="w-full text-base">
+
+            <thead>
+
+              <tr className="border-b bg-slate-50">
+
+                <th className="text-left p-4">
+                  Brand
+                </th>
+
+                <th className="text-left p-4">
+                  Campaign
+                </th>
+
+                <th className="text-left p-4">
+                  Creators
+                </th>
+
+                <th className="text-left p-4">
+                  Budget
+                </th>
+
+                <th className="text-left p-4">
+                  Reach
+                </th>
+
+                <th className="text-left p-4">
+                  Status
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              {campaigns.map((campaign, index) => (
+
+                <tr
+                  key={index}
+                  className="border-b hover:bg-slate-50"
+                >
+
+                  <td className="p-4 font-semibold">
+
+                    {campaign.brand}
+
+                  </td>
+
+                  <td className="p-4">
+
+                    {campaign.campaign}
+
+                  </td>
+
+                  <td className="p-4">
+
+                    {campaign.creators}
+
+                  </td>
+
+                  <td className="p-4 font-semibold">
+
+                    {campaign.budget}
+
+                  </td>
+
+                  <td className="p-4">
+
+                    {campaign.reach}
+
+                  </td>
+
+                  <td className="p-4">
+
+                    <span
+                      className={
+                        campaign.status === "Active"
+                          ? "px-3 py-1 rounded-full bg-green-100 text-green-700"
+                          : campaign.status === "Scheduled"
+                          ? "px-3 py-1 rounded-full bg-blue-100 text-blue-700"
+                          : "px-3 py-1 rounded-full bg-slate-200 text-slate-700"
+                      }
+                    >
+
+                      {campaign.status}
+
+                    </span>
+
+                  </td>
+
+                </tr>
+
+              ))}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+
+      {/* CAMPAIGN INSIGHTS */}
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+
+        <div className="ad-card p-6">
+
+          <h2 className="text-xl font-bold">
+            🏆 Best Campaign
+          </h2>
+
+          <p className="text-2xl font-bold mt-4">
+            Summer Glow 2026
+          </p>
+
+          <p className="text-slate-500 mt-2">
+            Generated 2.1M reach with 9.2% engagement.
+          </p>
+
+        </div>
+
+
+        <div className="ad-card p-6">
+
+          <h2 className="text-xl font-bold">
+            💡 AI Recommendation
+          </h2>
+
+          <p className="text-slate-500 mt-4">
+            Assign technology creators to the TechNova campaign.
+            Their audience engagement is growing rapidly.
+          </p>
+
+        </div>
+
+
+        <div className="ad-card p-6">
+
+          <h2 className="text-xl font-bold">
+            ⚠️ Attention Required
+          </h2>
+
+          <p className="text-slate-500 mt-4">
+            Two campaigns have used more than 85% of their
+            allocated budget.
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+    {/* CAMPAIGN MANAGEMENT TABLE */}
+
+<div className="ad-card p-6">
+
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+
+    <div>
+
+      <h2 className="text-2xl font-bold">
+        Campaign Management
+      </h2>
+
+      <p className="text-sm text-slate-500 mt-1">
+        Monitor campaign budget, creator performance,
+        reach, ROI and campaign progress.
+      </p>
+
+    </div>
+
+    <button
+      className="px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+    >
+      + Create Campaign
+    </button>
+
+  </div>
+
+
+  <div className="overflow-x-auto">
+
+    <table className="w-full min-w-[1150px] text-sm">
+
+      <thead>
+
+        <tr className="bg-slate-50 border-y">
+
+          <th className="text-left p-4 font-bold">
+            Campaign
+          </th>
+
+          <th className="text-left p-4 font-bold">
+            Brand
+          </th>
+
+          <th className="text-left p-4 font-bold">
+            Creator
+          </th>
+
+          <th className="text-left p-4 font-bold">
+            Budget
+          </th>
+
+          <th className="text-left p-4 font-bold">
+            Reach
+          </th>
+
+          <th className="text-left p-4 font-bold">
+            Engagement
+          </th>
+
+          <th className="text-left p-4 font-bold">
+            ROI
+          </th>
+
+          <th className="text-left p-4 font-bold">
+            Progress
+          </th>
+
+          <th className="text-left p-4 font-bold">
+            Status
+          </th>
+
+        </tr>
+
+      </thead>
+
+
+      <tbody>
+
+        {campaignTableData.map(
+          (campaign, index) => (
+
+            <tr
+              key={index}
+              className="border-b hover:bg-slate-50"
+            >
+
+              <td className="p-4">
+
+                <p className="font-bold">
+                  {campaign.name}
+                </p>
+
+                <p className="text-xs text-slate-500 mt-1">
+                  Spent: {campaign.spent}
+                </p>
+
+              </td>
+
+
+              <td className="p-4">
+
+                {campaign.brand}
+
+              </td>
+
+
+              <td className="p-4">
+
+                <div className="flex items-center gap-2">
+
+                  <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+
+                    {campaign.creator[0]}
+
+                  </div>
+
+                  <span className="font-semibold">
+
+                    {campaign.creator}
+
+                  </span>
+
+                </div>
+
+              </td>
+
+
+              <td className="p-4 font-semibold">
+
+                {campaign.budget}
+
+              </td>
+
+
+              <td className="p-4 font-semibold">
+
+                {campaign.reach}
+
+              </td>
+
+
+              <td className="p-4 text-green-600 font-bold">
+
+                {campaign.engagement}
+
+              </td>
+
+
+              <td className="p-4 text-purple-600 font-bold">
+
+                {campaign.roi}
+
+              </td>
+
+
+              <td className="p-4 min-w-[150px]">
+
+                <div className="flex justify-between mb-2">
+
+                  <span className="font-semibold">
+
+                    {campaign.progress}%
+
+                  </span>
+
+                </div>
+
+                <div className="w-full h-2 bg-slate-200 rounded-full">
+
+                  <div
+                    className="h-2 bg-blue-600 rounded-full"
+                    style={{
+                      width: `${campaign.progress}%`,
+                    }}
+                  />
+
+                </div>
+
+              </td>
+
+
+              <td className="p-4">
+
+                <span
+                  className={
+                    campaign.status === "Completed"
+                      ? "px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold"
+                      : campaign.status === "Active"
+                      ? "px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-semibold"
+                      : "px-3 py-1 rounded-full bg-orange-100 text-orange-700 font-semibold"
+                  }
+                >
+
+                  {campaign.status}
+
+                </span>
+
+              </td>
+
+            </tr>
+
+          )
+        )}
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+{/* BUDGET UTILIZATION */}
+
+<div className="ad-card p-6">
+
+  <div className="mb-6">
+
+    <h2 className="text-2xl font-bold">
+      Budget Utilization
+    </h2>
+
+    <p className="text-sm text-slate-500 mt-1">
+      Track allocated, used and remaining campaign budgets.
+    </p>
+
+  </div>
+
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+    {budgetData.map((budget, index) => (
+
+      <div
+        key={index}
+        className="border border-slate-200 rounded-2xl p-5"
+      >
+
+        <p className="text-sm text-slate-500">
+
+          {budget.title}
+
+        </p>
+
+        <h3 className="text-3xl font-bold mt-2">
+
+          {budget.value}
+
+        </h3>
+
+        <p className="text-sm text-slate-500 mt-2">
+
+          {budget.subtitle}
+
+        </p>
+
+        <div className="w-full h-2.5 bg-slate-200 rounded-full mt-5">
+
+          <div
+            className={`h-2.5 rounded-full ${budget.color}`}
+            style={{
+              width: `${budget.percentage}%`,
+            }}
+          />
+
+        </div>
+
+      </div>
+
+    ))}
+
+  </div>
+
+</div>
+
+
+{/* ALERTS + UPCOMING CAMPAIGNS */}
+
+<div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+
+  {/* CAMPAIGN ALERTS */}
+
+  <div className="ad-card p-6">
+
+    <div className="flex items-center justify-between mb-5">
+
+      <div>
+
+        <h2 className="text-2xl font-bold">
+          Campaign Alerts
+        </h2>
+
+        <p className="text-sm text-slate-500 mt-1">
+          Important actions requiring attention.
+        </p>
+
+      </div>
+
+      <span className="px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm font-bold">
+
+        {campaignAlerts.length} Alerts
+
+      </span>
+
+    </div>
+
+
+    <div className="space-y-4">
+
+      {campaignAlerts.map((alert, index) => (
+
+        <div
+          key={index}
+          className={
+            alert.type === "warning"
+              ? "border border-orange-200 bg-orange-50 rounded-xl p-4"
+              : alert.type === "danger"
+              ? "border border-red-200 bg-red-50 rounded-xl p-4"
+              : "border border-blue-200 bg-blue-50 rounded-xl p-4"
+          }
+        >
+
+          <p className="font-bold">
+
+            {alert.title}
+
+          </p>
+
+          <p className="text-sm text-slate-600 mt-2">
+
+            {alert.message}
+
+          </p>
+
+        </div>
+
+      ))}
+
+    </div>
+
+  </div>
+
+
+  {/* UPCOMING CAMPAIGNS */}
+
+  <div className="ad-card p-6">
+
+    <div className="mb-5">
+
+      <h2 className="text-2xl font-bold">
+        Upcoming Campaigns
+      </h2>
+
+      <p className="text-sm text-slate-500 mt-1">
+        Upcoming campaign schedules and workflow status.
+      </p>
+
+    </div>
+
+
+    <div className="space-y-4">
+
+      {upcomingCampaigns.map((campaign, index) => (
+
+        <div
+          key={index}
+          className="flex items-center justify-between gap-4 border border-slate-200 rounded-xl p-4 hover:bg-slate-50"
+        >
+
+          <div className="flex items-center gap-4">
+
+            <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex flex-col items-center justify-center font-bold">
+
+              <span className="text-xs">
+
+                AUG
+
+              </span>
+
+              <span>
+
+                {campaign.date.split(" ")[1]}
+
+              </span>
+
+            </div>
+
+            <div>
+
+              <p className="font-bold">
+
+                {campaign.name}
+
+              </p>
+
+              <p className="text-sm text-slate-500">
+
+                {campaign.brand}
+
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <span className="hidden sm:inline-block px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
+
+            {campaign.status}
+
+          </span>
+
+        </div>
+
+      ))}
+
+    </div>
+
+  </div>
+
+</div>
+{/* CREATOR MATCHING + ROI RANKING */}
+
+<div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+
+  {/* AI CREATOR MATCHING */}
+
+  <div className="ad-card p-6">
+
+    <div className="flex items-start justify-between gap-4 mb-6">
+
+      <div>
+
+        <h2 className="text-2xl font-bold">
+          🤖 AI Creator Matching
+        </h2>
+
+        <p className="text-sm text-slate-500 mt-1">
+          Recommended creators based on audience,
+          category and expected campaign performance.
+        </p>
+
+      </div>
+
+      <span className="hidden sm:block px-3 py-2 rounded-lg bg-purple-100 text-purple-700 text-xs font-bold">
+        AI Powered
+      </span>
+
+    </div>
+
+
+    <div className="space-y-4">
+
+      {creatorMatches.map((match, index) => (
+
+        <div
+          key={index}
+          className="border border-slate-200 rounded-2xl p-5 hover:shadow-md transition"
+        >
+
+          <div className="flex items-start justify-between gap-4">
+
+            <div className="flex items-center gap-3">
+
+              <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-lg font-bold">
+
+                {match.creator[0]}
+
+              </div>
+
+              <div>
+
+                <p className="font-bold text-lg">
+
+                  {match.creator}
+
+                </p>
+
+                <p className="text-sm text-slate-500">
+
+                  {match.category}
+
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <span
+              className={
+                match.score === "Excellent Match"
+                  ? "px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold"
+                  : "px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold"
+              }
+            >
+
+              {match.score}
+
+            </span>
+
+          </div>
+
+
+          <div className="grid grid-cols-3 gap-3 mt-5">
+
+            <div className="bg-slate-50 rounded-xl p-3">
+
+              <p className="text-xs text-slate-500">
+                Audience Match
+              </p>
+
+              <p className="font-bold text-green-600 mt-1">
+
+                {match.audienceMatch}%
+
+              </p>
+
+            </div>
+
+
+            <div className="bg-slate-50 rounded-xl p-3">
+
+              <p className="text-xs text-slate-500">
+                Expected Reach
+              </p>
+
+              <p className="font-bold mt-1">
+
+                {match.expectedReach}
+
+              </p>
+
+            </div>
+
+
+            <div className="bg-slate-50 rounded-xl p-3">
+
+              <p className="text-xs text-slate-500">
+                Engagement
+              </p>
+
+              <p className="font-bold text-purple-600 mt-1">
+
+                {match.expectedEngagement}
+
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div className="mt-4">
+
+            <p className="text-xs text-slate-500 mb-2">
+
+              Recommended for:
+              <span className="font-bold text-slate-700 ml-1">
+
+                {match.campaign}
+
+              </span>
+
+            </p>
+
+            <div className="w-full h-2 bg-slate-200 rounded-full">
+
+              <div
+                className="h-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full"
+                style={{
+                  width: `${match.audienceMatch}%`,
+                }}
+              />
+
+            </div>
+
+          </div>
+
+        </div>
+
+      ))}
+
+    </div>
+
+  </div>
+
+
+  {/* CAMPAIGN ROI RANKING */}
+
+  <div className="ad-card p-6">
+
+    <div className="mb-6">
+
+      <h2 className="text-2xl font-bold">
+        Campaign ROI Ranking
+      </h2>
+
+      <p className="text-sm text-slate-500 mt-1">
+        Top campaigns ranked by revenue and
+        return on investment.
+      </p>
+
+    </div>
+
+
+    <div className="space-y-4">
+
+      {roiRanking.map((item, index) => (
+
+        <div
+          key={index}
+          className="flex items-center gap-4 border border-slate-200 rounded-2xl p-5 hover:bg-slate-50"
+        >
+
+          <div
+            className={
+              item.rank === 1
+                ? "w-12 h-12 rounded-xl bg-yellow-100 text-yellow-700 flex items-center justify-center text-xl font-black"
+                : item.rank === 2
+                ? "w-12 h-12 rounded-xl bg-slate-200 text-slate-700 flex items-center justify-center text-xl font-black"
+                : "w-12 h-12 rounded-xl bg-orange-100 text-orange-700 flex items-center justify-center text-xl font-black"
+            }
+          >
+
+            #{item.rank}
+
+          </div>
+
+
+          <div className="flex-1">
+
+            <p className="font-bold text-lg">
+
+              {item.campaign}
+
+            </p>
+
+            <p className="text-sm text-slate-500 mt-1">
+
+              Revenue: {item.revenue}
+
+            </p>
+
+          </div>
+
+
+          <div className="text-right">
+
+            <p className="text-xl font-black text-purple-600">
+
+              {item.roi}
+
+            </p>
+
+            <p className="text-sm font-semibold text-green-600">
+
+              {item.growth}
+
+            </p>
+
+          </div>
+
+        </div>
+
+      ))}
+
+    </div>
+
+
+    <div className="mt-6 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 text-white p-5">
+
+      <p className="font-bold text-lg">
+
+        📈 Campaign Growth Insight
+
+      </p>
+
+      <p className="text-sm mt-2 text-blue-100">
+
+        Fashion campaigns currently generate the
+        highest ROI. Increasing investment in
+        fashion creators may improve agency revenue.
+
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
+  </div>
+
+  );
+};
 const renderPage = () => {
   // MARKETING TEAM
   if (userRole === "Marketing Team") {
@@ -3029,13 +5869,14 @@ const renderPage = () => {
         return <CampaignAnalytics />;
 
       case "audience":
-        return <AudienceDashboard />;
-
+  return <AudienceInsights />;
+  case "performance":
+  return <MarkettingPerformance />;
       case "growth":
         return <GrowthTrendDashboard />;
 
       case "reports":
-        return <ReportDashboard />;
+  return <MarketingReports />;
 
       default:
         return <MarketingOverview />;
@@ -3046,13 +5887,12 @@ const renderPage = () => {
   if (userRole === "Agency") {
     switch (active) {
       case "overview":
-        return <AgencyOverview />;
-
+        return <AgencyDashboard />;
       case "creators":
-        return <CreatorsDashboard />;
+        return <AgencyCreatorsDashboard />;
 
       case "campaigns":
-        return <CampaignDashboard />;
+        return <AgencyCampaignsDashboard />;
 
       case "revenue":
         return <RevenueDashboard />;
@@ -3061,7 +5901,7 @@ const renderPage = () => {
         return <ReportDashboard />;
 
       default:
-        return <AgencyOverview />;
+        return <AgencyDashboard />;
     }
   }
 
@@ -3076,9 +5916,13 @@ const renderPage = () => {
 
       case "settings":
         return <SystemSettings />;
+      case "security-audit":
+  return <SecurityAudit />;
 
-      case "reports":
-        return <ReportDashboard />;
+      case "admin-reports":
+  return <AdminReports />;
+  case "admin-notifications":
+  return <AdminNotifications />;
 
       default:
         return <AdminOverview />;
@@ -3129,6 +5973,13 @@ const renderPage = () => {
       />
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar title={pageTitle} setMobileOpen={setMobileOpen} />
+        <Navbar
+        title="Analytics Dashboard"
+  userRole={userRole}
+  globalSearch={globalSearch}
+  setGlobalSearch={setGlobalSearch}
+  handleGlobalSearch={handleGlobalSearch}
+/>
         <main
   className="flex-1 p-4 md:p-6 lg:p-8 ad-animate-in"
   key={active}
