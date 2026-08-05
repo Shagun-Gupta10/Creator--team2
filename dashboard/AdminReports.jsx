@@ -1,63 +1,91 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
-import { ReportChart } from "./ReportChart";
+
 import {
   FileText,
   Download,
+  Search,
   Users,
+  UserCheck,
   ShieldCheck,
+  Activity,
   TrendingUp,
-  Database,
-  FileSpreadsheet,
-  Braces,
-  Printer,
   Calendar,
+  FileSpreadsheet,
+  FileDown,
   CheckCircle2,
-  Clock,
+  AlertTriangle,
+  Eye,
 } from "lucide-react";
 
 
 const reportData = [
   {
-    id: "platform",
-    title: "Platform Summary",
+    id: 1,
+    title: "Platform User Report",
+    category: "Users",
+    period: "This Month",
+    value: "12,480",
+    change: "+12%",
+    status: "Healthy",
+    updated: "Today, 11:30 AM",
     description:
-      "Users, activity, growth and overall platform performance.",
-    icon: Database,
-    color:
-      "bg-blue-100 text-blue-700",
+      "User registrations and active users increased compared with the previous month.",
   },
 
   {
-    id: "users",
-    title: "User Management",
+    id: 2,
+    title: "Platform Security Report",
+    category: "Security",
+    period: "This Month",
+    value: "98.7%",
+    change: "+2.4%",
+    status: "Secure",
+    updated: "Today, 10:45 AM",
     description:
-      "User accounts, roles, status and registration activity.",
-    icon: Users,
-    color:
-      "bg-purple-100 text-purple-700",
+      "Most accounts are protected and unusual login attempts are being monitored.",
   },
 
   {
-    id: "security",
-    title: "Security & Audit",
+    id: 3,
+    title: "System Performance Report",
+    category: "Performance",
+    period: "This Month",
+    value: "99.9%",
+    change: "+0.5%",
+    status: "Excellent",
+    updated: "Today, 09:20 AM",
     description:
-      "Security alerts, login activity and audit events.",
-    icon: ShieldCheck,
-    color:
-      "bg-red-100 text-red-700",
+      "The dashboard and analytics services are operating with high availability.",
   },
 
   {
-    id: "growth",
-    title: "Growth & Performance",
+    id: 4,
+    title: "Marketing Analytics Report",
+    category: "Analytics",
+    period: "This Month",
+    value: "2.4M",
+    change: "+18%",
+    status: "Growing",
+    updated: "Yesterday",
     description:
-      "Platform reach, engagement and growth trends.",
-    icon: TrendingUp,
-    color:
-      "bg-green-100 text-green-700",
+      "Audience reach and campaign engagement showed positive growth.",
+  },
+
+  {
+    id: 5,
+    title: "Revenue Summary Report",
+    category: "Revenue",
+    period: "This Month",
+    value: "₹8.45L",
+    change: "+16%",
+    status: "Growing",
+    updated: "Yesterday",
+    description:
+      "Platform revenue increased because of improved campaign performance.",
   },
 ];
 
@@ -66,350 +94,328 @@ function AdminReports() {
 
   const [period, setPeriod] =
     useState("This Month");
-  const [message, setMessage] =
+
+  const [search, setSearch] =
     useState("");
 
-  const [downloadHistory, setDownloadHistory] =
-    useState([]);
+  const [category, setCategory] =
+    useState("All");
 
-const [selectedReport, setSelectedReport] = useState({
-  id: null,
-  title: "",
-});
+  const [selectedReportId, setSelectedReportId] =
+    useState(1);
 
-  const getSelectedReport = () => {
-  return reportData.find(
-    (report) => report.id === selectedReport.id
-  ) || {
-    title: "No report selected",
-    description: "",
-    date: ""
+
+  const filteredReports = useMemo(() => {
+
+    return reportData.filter((report) => {
+
+      const searchMatch =
+
+        report.title
+          .toLowerCase()
+          .includes(
+            search.toLowerCase()
+          ) ||
+
+        report.category
+          .toLowerCase()
+          .includes(
+            search.toLowerCase()
+          );
+
+
+      const categoryMatch =
+
+        category === "All" ||
+
+        report.category === category;
+
+
+      return (
+        searchMatch &&
+        categoryMatch
+      );
+
+    });
+
+  }, [
+    search,
+    category,
+  ]);
+
+
+  const selectedReport =
+
+    reportData.find(
+
+      (report) =>
+
+        report.id ===
+        selectedReportId
+
+    ) ||
+
+    reportData[0];
+
+
+  const downloadPDF = () => {
+
+    const pdf = new jsPDF();
+
+
+    pdf.setFontSize(20);
+
+    pdf.text(
+      "Admin Platform Report",
+      14,
+      20
+    );
+
+
+    pdf.setFontSize(11);
+
+    pdf.text(
+      `Period: ${period}`,
+      14,
+      29
+    );
+
+
+    pdf.text(
+      `Generated: ${new Date().toLocaleString()}`,
+      14,
+      36
+    );
+
+
+    autoTable(
+      pdf,
+      {
+        startY: 45,
+
+        head: [
+          [
+            "Report",
+            "Category",
+            "Value",
+            "Growth",
+            "Status",
+            "Updated",
+          ],
+        ],
+
+        body:
+
+          filteredReports.map(
+            (report) => [
+
+              report.title,
+
+              report.category,
+
+              report.value,
+
+              report.change,
+
+              report.status,
+
+              report.updated,
+
+            ]
+          ),
+
+      }
+    );
+
+
+    pdf.save(
+      "admin-platform-report.pdf"
+    );
+
   };
-};
+
+
+  const downloadExcel = () => {
+
+    const excelData =
+
+      filteredReports.map(
+        (report) => ({
+
+          Report:
+            report.title,
+
+          Category:
+            report.category,
+
+          Value:
+            report.value,
+
+          Growth:
+            report.change,
+
+          Status:
+            report.status,
+
+          Updated:
+            report.updated,
+
+          Description:
+            report.description,
+
+        })
+      );
+
+
+    const worksheet =
+
+      XLSX.utils.json_to_sheet(
+        excelData
+      );
+
+
+    const workbook =
+
+      XLSX.utils.book_new();
+
+
+    XLSX.utils.book_append_sheet(
+
+      workbook,
+
+      worksheet,
+
+      "Admin Reports"
+
+    );
+
+
+    XLSX.writeFile(
+
+      workbook,
+
+      "admin-platform-report.xlsx"
+
+    );
+
+  };
 
 
   const downloadCSV = () => {
 
-    const report =
-      getSelectedReport();
+    const csvHeader =
+
+      "Report,Category,Value,Growth,Status,Updated\n";
+
+
+    const csvRows =
+
+      filteredReports.map(
+        (report) =>
+
+          `"${report.title}",` +
+
+          `"${report.category}",` +
+
+          `"${report.value}",` +
+
+          `"${report.change}",` +
+
+          `"${report.status}",` +
+
+          `"${report.updated}"`
+      );
+
 
     const csvContent =
 
-`Report Type,${report.title}
-Period,${period}
-Total Users,12480
-Active Users,11820
-Security Score,87
-Platform Growth,18%`;
+      csvHeader +
+
+      csvRows.join("\n");
+
 
     const blob = new Blob(
+
       [csvContent],
+
       {
         type:
           "text/csv;charset=utf-8;",
       }
+
     );
+
 
     const url =
-      URL.createObjectURL(blob);
 
-    const link =
-      document.createElement("a");
-
-    link.href = url;
-
-    link.download =
-      `${report.id}-${period
-        .replaceAll(" ", "-")
-        .toLowerCase()}.csv`;
-
-    document.body.appendChild(
-      link
-    );
-
-    link.click();
-
-    document.body.removeChild(
-      link
-    );
-
-    URL.revokeObjectURL(
-      url
-    );
-
-    setMessage(
-      `${report.title} CSV report downloaded successfully.`
-    );
-
-    addToHistory(
-      report.title,
-      "CSV"
-    );
-
-  };
-
-
-  const downloadJSON = () => {
-
-    const report =
-      getSelectedReport();
-
-    const jsonData = {
-
-      reportType:
-        report.title,
-
-      period:
-
-        period,
-
-      generatedAt:
-
-        new Date()
-          .toLocaleString(),
-
-      statistics: {
-
-        totalUsers:
-          12480,
-
-        activeUsers:
-          11820,
-
-        securityScore:
-          87,
-
-        platformGrowth:
-          "18%",
-
-      },
-
-    };
-
-    const blob = new Blob(
-
-      [
-        JSON.stringify(
-          jsonData,
-          null,
-          2
-        ),
-      ],
-
-      {
-        type:
-          "application/json",
-      }
-
-    );
-
-    const url =
       URL.createObjectURL(
         blob
       );
 
+
     const link =
+
       document.createElement(
         "a"
       );
 
+
     link.href = url;
 
-    link.download =
-      `${report.id}-${period
-        .replaceAll(" ", "-")
-        .toLowerCase()}.json`;
 
-    document.body.appendChild(
-      link
-    );
+    link.download =
+
+      "admin-platform-report.csv";
+
 
     link.click();
 
-    document.body.removeChild(
-      link
-    );
 
     URL.revokeObjectURL(
       url
     );
 
-    setMessage(
-      `${report.title} JSON report downloaded successfully.`
-    );
-
-    addToHistory(
-      report.title,
-      "JSON"
-    );
-
   };
 
 
-  const printReport = () => {
-
-    window.print();
-
-    const report =
-      getSelectedReport();
-
-    setMessage(
-      `${report.title} report opened for printing.`
-    );
-
-    addToHistory(
-      report.title,
-      "Print"
-    );
-
-  };
-
-
-  const addToHistory = (
-    reportName,
-    format
+  const getStatusStyle = (
+    status
   ) => {
 
-    setDownloadHistory(
-      (currentHistory) => [
+    if (
+      status === "Healthy" ||
+      status === "Secure" ||
+      status === "Excellent"
+    ) {
 
-        {
-          id:
-            Date.now(),
+      return (
+        "bg-green-100 " +
+        "text-green-700"
+      );
 
-          report:
-            reportName,
+    }
 
-          format:
 
-            format,
+    if (
+      status === "Growing"
+    ) {
 
-          time:
+      return (
+        "bg-blue-100 " +
+        "text-blue-700"
+      );
 
-            new Date()
-              .toLocaleTimeString(),
+    }
 
-        },
 
-        ...currentHistory,
-
-      ]
+    return (
+      "bg-orange-100 " +
+      "text-orange-700"
     );
 
   };
-const reportData = [
-  {
-    category: "Total Users",
-    value: "12,480",
-    status: "Healthy",
-  },
-  {
-    category: "Active Users",
-    value: "11,820",
-    status: "Excellent",
-  },
-  {
-    category: "Platform Revenue",
-    value: "₹8,45,000",
-    status: "Growing",
-  },
-  {
-    category: "Security Alerts",
-    value: "7",
-    status: "Needs Review",
-  },
-];
 
 
-const downloadPDF = () => {
-
-  const pdf = new jsPDF();
-
-  pdf.setFontSize(20);
-
-  pdf.text(
-    "Admin Platform Report",
-    14,
-    20
-  );
-
-  pdf.setFontSize(11);
-
-  pdf.text(
-    "Generated from Analytics Dashboard",
-    14,
-    28
-  );
-
-  autoTable(
-    pdf,
-    {
-      startY: 38,
-
-      head: [
-        [
-          "Category",
-          "Value",
-          "Status",
-        ],
-      ],
-
-      body:
-        reportData.map(
-          (item) => [
-
-            item.category,
-
-            item.value,
-
-            item.status,
-
-          ]
-        ),
-    }
-  );
-
-  pdf.save(
-    "admin-platform-report.pdf"
-  );
-
-};
-
-
-const downloadExcel = () => {
-
-  const worksheet =
-
-    XLSX.utils.json_to_sheet(
-      reportData
-    );
-
-
-  const workbook =
-
-    XLSX.utils.book_new();
-
-
-  XLSX.utils.book_append_sheet(
-
-    workbook,
-
-    worksheet,
-
-    "Admin Report"
-
-  );
-
-
-  XLSX.writeFile(
-
-    workbook,
-
-    "admin-platform-report.xlsx"
-
-  );
-
-};
   return (
 
     <div className="space-y-7">
@@ -417,7 +423,8 @@ const downloadExcel = () => {
 
       {/* HEADER */}
 
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-5">
+
 
         <div>
 
@@ -427,40 +434,48 @@ const downloadExcel = () => {
 
           </p>
 
+
           <h1 className="text-3xl font-bold mt-1">
 
-            Reports & Data Export
+            Admin Reports
 
           </h1>
 
+
           <p className="text-gray-500 mt-2">
 
-            Generate platform reports
-            and export administrative data.
+            Monitor platform users,
+            security, performance,
+            analytics and revenue.
 
           </p>
 
         </div>
 
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap gap-3">
 
-          <Calendar
-            size={20}
-            className="text-blue-600"
-          />
 
           <select
 
             value={period}
 
             onChange={(event) =>
+
               setPeriod(
                 event.target.value
               )
+
             }
 
-            className="border rounded-xl px-4 py-3 bg-white"
+            className="
+              border
+              border-gray-300
+              rounded-xl
+              px-4
+              py-3
+              bg-white
+            "
 
           >
 
@@ -490,175 +505,70 @@ const downloadExcel = () => {
 
           </select>
 
-        </div>
-
-      </div>
-
-
-      {/* SUCCESS MESSAGE */}
-
-      {message && (
-
-        <div className="flex items-center justify-between gap-4 bg-green-50 border border-green-200 text-green-700 rounded-2xl p-4">
-
-          <div className="flex items-center gap-3">
-
-            <CheckCircle2
-              size={21}
-            />
-
-            <p className="font-semibold">
-
-              {message}
-
-            </p>
-
-          </div>
 
           <button
 
             type="button"
 
-            onClick={() =>
-              setMessage("")
+            onClick={
+              downloadPDF
             }
 
-            className="font-bold text-xl"
+            className="
+              flex
+              items-center
+              gap-2
+              bg-red-600
+              hover:bg-red-700
+              text-white
+              px-5
+              py-3
+              rounded-xl
+              font-semibold
+            "
 
           >
 
-            ×
+            <FileText
+              size={18}
+            />
+
+            PDF
 
           </button>
 
-        </div>
 
-      )}
+          <button
 
+            type="button"
 
-      {/* REPORT CARDS */}
+            onClick={
+              downloadExcel
+            }
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+            className="
+              flex
+              items-center
+              gap-2
+              bg-green-600
+              hover:bg-green-700
+              text-white
+              px-5
+              py-3
+              rounded-xl
+              font-semibold
+            "
 
-        {reportData.map(
-          (report) => {
+          >
 
-            const Icon =
-              report.icon;
+            <FileSpreadsheet
+              size={18}
+            />
 
-            const selected =
-              selectedReport ===
-              report.id;
+            Excel
 
-            return (
+          </button>
 
-              <button
-
-                type="button"
-
-                key={report.id}
-
-                onClick={() =>
-                  setSelectedReport(
-                    report.id
-                  )
-                }
-
-                className={
-                  `text-left bg-white border rounded-2xl p-6 shadow-sm transition
-                  ${
-                    selected
-
-                      ? "border-blue-600 ring-2 ring-blue-100"
-
-                      : "hover:border-blue-300"
-                  }`
-                }
-
-              >
-
-                <div
-
-                  className={
-                    `w-12 h-12 rounded-xl flex items-center justify-center ${report.color}`
-                  }
-
-                >
-
-                  <Icon
-                    size={24}
-                  />
-
-                </div>
-
-                <h2 className="font-bold text-lg mt-5">
-
-                  {report.title}
-
-                </h2>
-
-                <p className="text-sm text-gray-500 mt-2">
-
-                  {report.description}
-
-                </p>
-
-              </button>
-
-            );
-
-          }
-
-        )}
-
-      </div>
-
-
-      {/* EXPORT SECTION */}
-
-      <div className="bg-white border rounded-2xl p-7 shadow-sm">
-
-        <div className="flex items-center gap-3">
-
-          <FileText
-            className="text-blue-600"
-            size={26}
-          />
-
-          <div>
-
-            <h2 className="text-xl font-bold">
-
-              Export Selected Report
-
-            </h2>
-
-            <p className="text-sm text-gray-500 mt-1">
-
-              Selected:
-
-              {" "}
-
-             <span className="font-semibold text-gray-700">
-
-  {
-    getSelectedReport()?.title
-    || "No report selected"
-  }
-
-</span>
-
-            </p>
-
-          </div>
-
-        </div>
-
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-7">
-
-
-          {/* CSV */}
 
           <button
 
@@ -668,134 +578,26 @@ const downloadExcel = () => {
               downloadCSV
             }
 
-            className="border rounded-2xl p-6 text-left hover:border-green-500 hover:bg-green-50 transition"
+            className="
+              flex
+              items-center
+              gap-2
+              bg-blue-700
+              hover:bg-blue-800
+              text-white
+              px-5
+              py-3
+              rounded-xl
+              font-semibold
+            "
 
           >
 
-            <div className="w-12 h-12 bg-green-100 text-green-700 rounded-xl flex items-center justify-center">
+            <FileDown
+              size={18}
+            />
 
-              <FileSpreadsheet
-                size={24}
-              />
-
-            </div>
-
-            <h3 className="font-bold text-lg mt-5">
-
-              Download CSV
-
-            </h3>
-
-            <p className="text-sm text-gray-500 mt-2">
-
-              Export report data
-              for Excel or spreadsheets.
-
-            </p>
-
-          </button>
-
-
-          {/* JSON */}
-
-          <button
-
-            type="button"
-
-            onClick={
-              downloadJSON
-            }
-
-            className="border rounded-2xl p-6 text-left hover:border-purple-500 hover:bg-purple-50 transition"
-
-          >
-
-            <div className="w-12 h-12 bg-purple-100 text-purple-700 rounded-xl flex items-center justify-center">
-
-              <Braces
-                size={24}
-              />
-
-            </div>
-
-            <h3 className="font-bold text-lg mt-5">
-
-              Download JSON
-
-            </h3>
-
-            <p className="text-sm text-gray-500 mt-2">
-
-              Export structured
-              platform data for systems.
-
-            </p>
-
-          </button>
-          <div className="flex flex-wrap gap-3">
-
-  <button
-    type="button"
-    onClick={downloadPDF}
-    className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-xl font-semibold"
-  >
-
-    <Download size={19} />
-
-    Download PDF
-
-  </button>
-
-
-  <button
-    type="button"
-    onClick={downloadExcel}
-    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl font-semibold"
-  >
-
-    <Download size={19} />
-
-    Download Excel
-
-  </button>
-
-</div>
-
-
-          {/* PRINT */}
-
-          <button
-
-            type="button"
-
-            onClick={
-              printReport
-            }
-
-            className="border rounded-2xl p-6 text-left hover:border-blue-500 hover:bg-blue-50 transition"
-
-          >
-
-            <div className="w-12 h-12 bg-blue-100 text-blue-700 rounded-xl flex items-center justify-center">
-
-              <Printer
-                size={24}
-              />
-
-            </div>
-
-            <h3 className="font-bold text-lg mt-5">
-
-              Print Report
-
-            </h3>
-
-            <p className="text-sm text-gray-500 mt-2">
-
-              Open the report
-              in the browser print window.
-
-            </p>
+            CSV
 
           </button>
 
@@ -804,101 +606,324 @@ const downloadExcel = () => {
       </div>
 
 
-      {/* REPORT PREVIEW */}
+      {/* KPI CARDS */}
 
-      <div className="bg-slate-900 text-white rounded-2xl p-7">
+      <div className="
+        grid
+        grid-cols-1
+        sm:grid-cols-2
+        xl:grid-cols-4
+        gap-5
+      ">
 
-        <div className="flex items-center gap-3">
 
-          <TrendingUp
-            size={25}
-          />
+        <div className="
+          bg-white
+          border
+          rounded-2xl
+          p-6
+          shadow-sm
+        ">
 
-          <div>
+          <div className="
+            w-12
+            h-12
+            bg-blue-100
+            text-blue-700
+            rounded-xl
+            flex
+            items-center
+            justify-center
+          ">
 
-            <h2 className="text-xl font-bold">
-
-              Report Preview
-
-            </h2>
-console.log("Report data:", report);
-            <p className="text-slate-300 text-sm mt-1">
-{
-  getSelectedReport()?.title || "No report selected"
-}
-</p>
-              
-
-              {" · "}
-
-              {period}
+            <Users size={24} />
 
           </div>
+
+
+          <p className="
+            text-gray-500
+            mt-5
+          ">
+
+            Total Users
+
+          </p>
+
+
+          <h2 className="
+            text-3xl
+            font-bold
+            mt-1
+          ">
+
+            12,480
+
+          </h2>
+
+
+          <p className="
+            text-green-600
+            text-sm
+            mt-2
+          ">
+
+            +12% growth
+
+          </p>
 
         </div>
 
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mt-7">
+        <div className="
+          bg-white
+          border
+          rounded-2xl
+          p-6
+          shadow-sm
+        ">
 
-          <div>
+          <div className="
+            w-12
+            h-12
+            bg-green-100
+            text-green-700
+            rounded-xl
+            flex
+            items-center
+            justify-center
+          ">
 
-            <p className="text-slate-400 text-sm">
-
-              Total Users
-
-            </p>
-
-            <p className="text-3xl font-bold mt-2">
-
-              12,480
-
-            </p>
-
-          </div>
-
-          <div>
-
-            <p className="text-slate-400 text-sm">
-
-              Active Users
-
-            </p>
-
-            <p className="text-3xl font-bold mt-2">
-
-              11,820
-
-            </p>
+            <UserCheck
+              size={24}
+            />
 
           </div>
 
-          <div>
 
-            <p className="text-slate-400 text-sm">
+          <p className="
+            text-gray-500
+            mt-5
+          ">
 
-              Security Score
+            Active Users
 
-            </p>
+          </p>
 
-            <p className="text-3xl font-bold mt-2">
 
-              87/100
+          <h2 className="
+            text-3xl
+            font-bold
+            mt-1
+          ">
 
-            </p>
+            11,820
+
+          </h2>
+
+
+          <p className="
+            text-green-600
+            text-sm
+            mt-2
+          ">
+
+            94.7% active
+
+          </p>
+
+        </div>
+
+
+        <div className="
+          bg-white
+          border
+          rounded-2xl
+          p-6
+          shadow-sm
+        ">
+
+          <div className="
+            w-12
+            h-12
+            bg-purple-100
+            text-purple-700
+            rounded-xl
+            flex
+            items-center
+            justify-center
+          ">
+
+            <ShieldCheck
+              size={24}
+            />
 
           </div>
 
+
+          <p className="
+            text-gray-500
+            mt-5
+          ">
+
+            Security Score
+
+          </p>
+
+
+          <h2 className="
+            text-3xl
+            font-bold
+            mt-1
+          ">
+
+            98.7%
+
+          </h2>
+
+
+          <p className="
+            text-green-600
+            text-sm
+            mt-2
+          ">
+
+            Platform secure
+
+          </p>
+
+        </div>
+
+
+        <div className="
+          bg-white
+          border
+          rounded-2xl
+          p-6
+          shadow-sm
+        ">
+
+          <div className="
+            w-12
+            h-12
+            bg-orange-100
+            text-orange-700
+            rounded-xl
+            flex
+            items-center
+            justify-center
+          ">
+
+            <Activity
+              size={24}
+            />
+
+          </div>
+
+
+          <p className="
+            text-gray-500
+            mt-5
+          ">
+
+            System Uptime
+
+          </p>
+
+
+          <h2 className="
+            text-3xl
+            font-bold
+            mt-1
+          ">
+
+            99.9%
+
+          </h2>
+
+
+          <p className="
+            text-blue-600
+            text-sm
+            mt-2
+          ">
+
+            Running normally
+
+          </p>
+
+        </div>
+
+      </div>
+
+
+      {/* AI SUMMARY */}
+
+      <div className="
+        bg-gradient-to-r
+        from-blue-700
+        to-purple-800
+        rounded-2xl
+        p-7
+        text-white
+      ">
+
+        <div className="
+          flex
+          gap-4
+        ">
+
+          <div className="
+            bg-white/20
+            p-3
+            rounded-xl
+            h-fit
+          ">
+
+            <TrendingUp
+              size={25}
+            />
+
+          </div>
+
+
           <div>
 
-            <p className="text-slate-400 text-sm">
+            <p className="
+              text-blue-200
+              text-sm
+            ">
 
-              Platform Growth
+              AI Executive Summary
 
             </p>
 
-            <p className="text-3xl font-bold mt-2 text-green-400">
 
-              +18%
+            <h2 className="
+              text-2xl
+              font-bold
+              mt-1
+            ">
+
+              Platform Performance
+              is Stable
+
+            </h2>
+
+
+            <p className="
+              text-blue-100
+              mt-3
+              max-w-4xl
+            ">
+
+              User growth increased
+              by 12%, platform uptime
+              remains at 99.9%, and
+              security protection is
+              strong. Seven unusual
+              login attempts require
+              administrator review.
 
             </p>
 
@@ -909,97 +934,678 @@ console.log("Report data:", report);
       </div>
 
 
-      {/* DOWNLOAD HISTORY */}
+      {/* SEARCH */}
 
-      <div className="bg-white border rounded-2xl p-6 shadow-sm">
+      <div className="
+        bg-white
+        border
+        rounded-2xl
+        p-5
+        shadow-sm
+      ">
 
-        <div className="flex items-center gap-3">
+        <div className="
+          flex
+          flex-col
+          lg:flex-row
+          gap-4
+          lg:items-center
+          lg:justify-between
+        ">
 
-          <Clock
-            className="text-blue-600"
-            size={23}
-          />
 
-          <div>
+          <div className="
+            relative
+            w-full
+            lg:w-96
+          ">
 
-            <h2 className="text-xl font-bold">
+            <Search
 
-              Export History
+              size={19}
 
-            </h2>
+              className="
+                absolute
+                left-4
+                top-4
+                text-gray-400
+              "
 
-            <p className="text-sm text-gray-500">
+            />
 
-              Recent report downloads
-              during this session.
 
-            </p>
+            <input
+
+              type="text"
+
+              value={search}
+
+              onChange={(event) =>
+
+                setSearch(
+                  event.target.value
+                )
+
+              }
+
+              placeholder="
+                Search reports...
+              "
+
+              className="
+                w-full
+                border
+                rounded-xl
+                pl-11
+                pr-4
+                py-3
+                outline-none
+                focus:ring-2
+                focus:ring-blue-500
+              "
+
+            />
 
           </div>
+
+
+          <select
+
+            value={category}
+
+            onChange={(event) =>
+
+              setCategory(
+                event.target.value
+              )
+
+            }
+
+            className="
+              border
+              rounded-xl
+              px-4
+              py-3
+              bg-white
+            "
+
+          >
+
+            <option value="All">
+
+              All Categories
+
+            </option>
+
+            <option value="Users">
+
+              Users
+
+            </option>
+
+            <option value="Security">
+
+              Security
+
+            </option>
+
+            <option value="Performance">
+
+              Performance
+
+            </option>
+
+            <option value="Analytics">
+
+              Analytics
+
+            </option>
+
+            <option value="Revenue">
+
+              Revenue
+
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      {/* REPORT TABLE */}
+
+      <div className="
+        bg-white
+        border
+        rounded-2xl
+        shadow-sm
+        overflow-hidden
+      ">
+
+        <div className="
+          p-6
+          border-b
+        ">
+
+          <h2 className="
+            text-xl
+            font-bold
+          ">
+
+            Platform Reports
+
+          </h2>
+
+
+          <p className="
+            text-sm
+            text-gray-500
+            mt-1
+          ">
+
+            Showing
+            {" "}
+            {filteredReports.length}
+            {" "}
+            reports
+
+          </p>
 
         </div>
 
 
-        {downloadHistory.length === 0
+        <div className="
+          overflow-x-auto
+        ">
 
-          ? (
+          <table className="
+            w-full
+            min-w-[900px]
+          ">
 
-            <p className="text-gray-400 text-center py-10">
+            <thead className="
+              bg-gray-50
+            ">
 
-              No reports downloaded yet.
+              <tr>
 
-            </p>
+                <th className="
+                  text-left
+                  p-4
+                ">
 
-          )
+                  Report
 
-          : (
+                </th>
 
-            <div className="mt-6 space-y-3">
 
-              {downloadHistory.map(
-                (item) => (
+                <th className="
+                  text-left
+                  p-4
+                ">
 
-                  <div
+                  Category
 
-                    key={item.id}
+                </th>
 
-                    className="flex items-center justify-between border rounded-xl p-4"
+
+                <th className="
+                  text-left
+                  p-4
+                ">
+
+                  Value
+
+                </th>
+
+
+                <th className="
+                  text-left
+                  p-4
+                ">
+
+                  Growth
+
+                </th>
+
+
+                <th className="
+                  text-left
+                  p-4
+                ">
+
+                  Status
+
+                </th>
+
+
+                <th className="
+                  text-left
+                  p-4
+                ">
+
+                  Action
+
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              {filteredReports.map(
+                (report) => (
+
+                  <tr
+
+                    key={report.id}
+
+                    className="
+                      border-t
+                      hover:bg-gray-50
+                    "
 
                   >
 
-                    <div>
+                    <td className="
+                      p-4
+                      font-semibold
+                    ">
 
-                      <p className="font-semibold">
+                      {report.title}
 
-                        {item.report}
+                    </td>
 
-                      </p>
 
-                      <p className="text-sm text-gray-500">
+                    <td className="
+                      p-4
+                    ">
 
-                        {item.time}
+                      {report.category}
 
-                      </p>
+                    </td>
 
-                    </div>
 
-                    <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-bold">
+                    <td className="
+                      p-4
+                      font-bold
+                    ">
 
-                      {item.format}
+                      {report.value}
 
-                    </span>
+                    </td>
 
-                  </div>
+
+                    <td className="
+                      p-4
+                      text-green-600
+                      font-semibold
+                    ">
+
+                      {report.change}
+
+                    </td>
+
+
+                    <td className="
+                      p-4
+                    ">
+
+                      <span
+
+                        className={
+
+                          `
+                          px-3
+                          py-1
+                          rounded-full
+                          text-sm
+                          font-semibold
+                          ${getStatusStyle(
+                            report.status
+                          )}
+                          `
+
+                        }
+
+                      >
+
+                        {report.status}
+
+                      </span>
+
+                    </td>
+
+
+                    <td className="
+                      p-4
+                    ">
+
+                      <button
+
+                        type="button"
+
+                        onClick={() =>
+
+                          setSelectedReportId(
+                            report.id
+                          )
+
+                        }
+
+                        className="
+                          flex
+                          items-center
+                          gap-2
+                          text-blue-700
+                          bg-blue-50
+                          hover:bg-blue-100
+                          px-3
+                          py-2
+                          rounded-lg
+                          font-semibold
+                        "
+
+                      >
+
+                        <Eye
+                          size={17}
+                        />
+
+                        View
+
+                      </button>
+
+                    </td>
+
+                  </tr>
 
                 )
-
               )}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+
+      {/* SELECTED REPORT */}
+
+      <div className="
+        bg-white
+        border
+        rounded-2xl
+        p-7
+        shadow-sm
+      ">
+
+        <div className="
+          flex
+          items-start
+          gap-4
+        ">
+
+          <div className="
+            bg-blue-100
+            text-blue-700
+            p-3
+            rounded-xl
+          ">
+
+            <FileText
+              size={25}
+            />
+
+          </div>
+
+
+          <div>
+
+            <p className="
+              text-blue-600
+              font-semibold
+              text-sm
+            ">
+
+              Selected Report
+
+            </p>
+
+
+            <h2 className="
+              text-2xl
+              font-bold
+              mt-1
+            ">
+
+              {selectedReport.title}
+
+            </h2>
+
+
+            <p className="
+              text-gray-500
+              mt-3
+              max-w-3xl
+            ">
+
+              {selectedReport.description}
+
+            </p>
+
+
+            <div className="
+              flex
+              flex-wrap
+              gap-5
+              mt-5
+              text-sm
+            ">
+
+              <span>
+
+                <strong>
+                  Category:
+                </strong>
+
+                {" "}
+
+                {selectedReport.category}
+
+              </span>
+
+
+              <span>
+
+                <strong>
+                  Value:
+                </strong>
+
+                {" "}
+
+                {selectedReport.value}
+
+              </span>
+
+
+              <span>
+
+                <strong>
+                  Updated:
+                </strong>
+
+                {" "}
+
+                {selectedReport.updated}
+
+              </span>
 
             </div>
 
-          )
+          </div>
 
-        }
+        </div>
+
+      </div>
+
+
+      {/* REPORT STATUS */}
+
+      <div className="
+        grid
+        grid-cols-1
+        md:grid-cols-3
+        gap-5
+      ">
+
+
+        <div className="
+          bg-white
+          border
+          rounded-2xl
+          p-5
+        ">
+
+          <div className="
+            flex
+            items-center
+            gap-3
+          ">
+
+            <CheckCircle2
+              className="
+                text-green-600
+              "
+            />
+
+
+            <div>
+
+              <p className="
+                font-bold
+              ">
+
+                Reports Updated
+
+              </p>
+
+
+              <p className="
+                text-sm
+                text-gray-500
+              ">
+
+                Latest data available
+
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div className="
+          bg-white
+          border
+          rounded-2xl
+          p-5
+        ">
+
+          <div className="
+            flex
+            items-center
+            gap-3
+          ">
+
+            <Calendar
+              className="
+                text-blue-600
+              "
+            />
+
+
+            <div>
+
+              <p className="
+                font-bold
+              ">
+
+                Report Schedule
+
+              </p>
+
+
+              <p className="
+                text-sm
+                text-gray-500
+              ">
+
+                Monthly generation
+
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div className="
+          bg-orange-50
+          border
+          border-orange-200
+          rounded-2xl
+          p-5
+        ">
+
+          <div className="
+            flex
+            items-center
+            gap-3
+          ">
+
+            <AlertTriangle
+              className="
+                text-orange-600
+              "
+            />
+
+
+            <div>
+
+              <p className="
+                font-bold
+              ">
+
+                Security Review
+
+              </p>
+
+
+              <p className="
+                text-sm
+                text-gray-600
+              ">
+
+                7 login alerts detected
+
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
 
       </div>
 
