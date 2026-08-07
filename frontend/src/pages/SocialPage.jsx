@@ -52,6 +52,18 @@ export default function SocialPage({ platform, title, subtitle }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const connectYouTube = async () => {
+  const res = await fetch("http://localhost:8000/auth/youtube/login");
+  const data = await res.json();
+  window.location.href = data.login_url;
+};
+
+const connectFacebook = async () => {
+  const res = await fetch("http://localhost:8000/auth/facebook/login");
+  const data = await res.json();
+  window.location.href = data.login_url;
+};
+
   useEffect(() => {
     let cancelled = false;
 
@@ -105,6 +117,21 @@ export default function SocialPage({ platform, title, subtitle }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-text">{title}</h1>
+          <div className="flex gap-3 mb-6">
+  <button
+    onClick={connectYouTube}
+    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+  >
+    Connect YouTube
+  </button>
+
+  <button
+    onClick={connectFacebook}
+    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+  >
+    Connect Facebook
+  </button>
+</div>
           <p className="text-muted">{subtitle}</p>
         </div>
       </div>

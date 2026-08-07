@@ -30,6 +30,8 @@ from app.routes.social import router as social_router
 from app.routes.instagram_auth import router as instagram_router
 from app.routes.instagram_api import router as instagram_api_router
 from app.routes import growth, revenue
+from app.routes.youtube_auth import router as youtube_router
+from app.routes.facebook_auth import router as facebook_router
 
 # Create tables
 Base.metadata.create_all(bind=engine, checkfirst=True)
@@ -67,6 +69,8 @@ app.include_router(instagram_router)
 app.include_router(instagram_api_router)
 app.include_router(growth.router)
 app.include_router(revenue.router)
+app.include_router(youtube_router)
+app.include_router(facebook_router)
 
 @app.get("/")
 def home():
