@@ -1,4 +1,4 @@
-const user = JSON.parse(localStorage.getItem("creatorUser"));
+
 import RevenueDashboard from "./revenue/RevenueDashboard";
 import ReportDashboard from "./reports/ReportDashboard";
 import AdminOverview from "./admin/AdminOverview";
@@ -29,140 +29,993 @@ import {
   UserPlus, Globe, ChevronsUpDown, CheckCircle2, AlertCircle, Loader2,
   Settings, Sparkles,Video,Award,BadgeDollarSign,IndianRupee,ShieldCheck,
 } from "lucide-react";
+const user = JSON.parse(localStorage.getItem("creatorUser"));
+const CustomTooltip = ({ active, payload, label }) => {
+  if (!active || !payload || !payload.length) return null;
+
+  return (
+    <div
+      style={{
+        background: "#FFFFFF",
+        border: "1px solid #CBD5E1",
+        borderRadius: "10px",
+        padding: "12px 14px",
+        minWidth: "180px",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+      }}
+    >
+      <div
+        style={{
+          color: "#111827",
+          fontWeight: 700,
+          marginBottom: "8px",
+          fontSize: "13px",
+        }}
+      >
+        {label}
+      </div>
+
+      {payload.map((entry, index) => (
+        <div
+          key={index}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: "6px",
+          }}
+        >
+          <span
+            style={{
+              color: "#111827",
+              fontWeight: 600,
+            }}
+          >
+            {entry.name}
+          </span>
+
+          <span
+            style={{
+              color: "#111827",
+              fontWeight: 700,
+            }}
+          >
+            {entry.value}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
 /* ============================================================
    DESIGN TOKENS — injected once as global CSS custom properties
    ============================================================ */
 const GlobalStyle = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-      /* =========================================================
-   UNIQUE TERRACOTTA + COCOA DASHBOARD THEME
-========================================================= */
 
---bg: #FFF8F4;
---surface: #FFFFFF;
---surface-alt: #FFF2EB;
+    /* =====================================================
+       PULSE STUDIO - DARK PROFESSIONAL DASHBOARD THEME
+    ===================================================== */
 
---ink: #2D1B18;
---ink-soft: #654A44;
---muted: #9A7D75;
+    :root {
+      /* Main Background */
+      --bg: #0F172A;
 
---border: #F0DCD3;
+      /* Cards and Sections */
+      --surface: #182235;
+      --surface-alt: #202D40;
 
-/* Main dashboard color */
---accent: #D95D47;
---accent-ink: #FFFFFF;
+      /* Text Colors */
+      --ink: #F8FAFC;
+      --ink-soft: #D7E0EC;
+      --muted: #AAB7CC;
 
---accent-soft: #FDE8E1;
---accent-soft-ink: #A63F2D;
+      /* Borders */
+      --border: #34435A;
 
-/* Success / growth */
---teal: #238B7E;
---teal-soft: #E2F4F0;
+      /* Main Accent */
+      --accent: #FF765C;
+      --accent-ink: #FFFFFF;
 
-/* Negative / alert */
---rose: #C94F6D;
---rose-soft: #FBE7EC;
+      /* Accent Background */
+      --accent-soft: #3A2930;
+      --accent-soft-ink: #FFB4A5;
 
-/* Revenue / warning */
---amber: #D9942E;
---amber-soft: #FFF1D9;
+      /* Success */
+      --teal: #2DD4BF;
+      --teal-soft: #173B3B;
 
-/* Sidebar */
---sidebar-bg: #2D1B18;
---sidebar-bg-hover: #472B26;
+      /* Alert */
+      --rose: #FB7185;
+      --rose-soft: #40232D;
 
---sidebar-text: #C7AAA2;
---sidebar-text-active: #FFFFFF;
+      /* Warning */
+      --amber: #FBBF24;
+      --amber-soft: #40351D;
+
+      /* Sidebar */
+      --sidebar-bg: #0B1220;
+      --sidebar-bg-hover: #1E2A3D;
+
+      --sidebar-text: #AAB7CC;
+      --sidebar-text-active: #FFFFFF;
+
       --radius: 14px;
-      font-family: 'Inter', sans-serif;
+    }
+
+
+    /* =====================================================
+       GLOBAL SETTINGS
+    ===================================================== */
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
       background: var(--bg);
       color: var(--ink);
+      font-family: 'Inter', sans-serif;
       -webkit-font-smoothing: antialiased;
     }
-    .ad-root .font-display { font-family: 'Sora', sans-serif; }
-    .ad-root .font-mono { font-family: 'JetBrains Mono', monospace; }
 
-    .ad-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
-    .ad-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .ad-scrollbar::-webkit-scrollbar-thumb { background: #D6D9E6; border-radius: 8px; }
-    .ad-root ::selection { background: var(--accent-soft); color: var(--accent); }
 
-    @keyframes ad-fade-up { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
-    .ad-animate-in { animation: ad-fade-up .45s cubic-bezier(.2,.8,.2,1) both; }
+    /* =====================================================
+       MAIN DASHBOARD
+    ===================================================== */
 
-    @keyframes ad-pulse { 0%,100% { opacity:1; } 50% { opacity:.35; } }
-    .ad-pulse-dot { animation: ad-pulse 1.8s ease-in-out infinite; }
-
-    @keyframes ad-shimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
-    .ad-skeleton {
-      background: linear-gradient(90deg, #EEF0F6 25%, #F7F8FC 37%, #EEF0F6 63%);
-      background-size: 400px 100%;
-      animation: ad-shimmer 1.4s ease-in-out infinite;
+    main,
+    .dashboard,
+    .dashboard-container,
+    .dashboard-content {
+      background-color: var(--bg) !important;
+      color: var(--ink);
     }
 
-    .ad-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
+
+    /* =====================================================
+       ALL HEADINGS - ALWAYS VISIBLE
+    ===================================================== */
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      color: #ffffff4e !important;
+    }
+
+
+    /* =====================================================
+       NORMAL TEXT
+    ===================================================== */
+
+    p,
+    span,
+    label,
+    li,
+    td,
+    div {
+      color: var(--ink-soft);
+    }
+
+
+    /* =====================================================
+       IMPORTANT TEXT
+    ===================================================== */
+
+    .font-bold,
+    .font-semibold {
+      color: #FFFFFF !important;
+    }
+
+
+    /* =====================================================
+       MUTED TEXT
+    ===================================================== */
+
+    .text-slate-400,
+    .text-slate-500,
+    .text-slate-600,
+    .text-gray-400,
+    .text-gray-500,
+    .text-gray-600 {
+      color: #AAB7CC !important;
+    }
+
+
+    
+
+    /* =====================================================
+       CARDS
+    ===================================================== */
+
+    .card,
+    .dashboard-card,
+    .analytics-card,
+    .stat-card,
+    .chart-card,
+    .widget-card {
+      background-color: var(--surface) !important;
+      border: 1px solid var(--border) !important;
+      color: var(--ink) !important;
       border-radius: var(--radius);
-      transition: box-shadow .25s ease, transform .25s ease, border-color .25s ease;
-    }
-    .ad-card-hover:hover {
-      box-shadow: 0 12px 28px -14px rgba(18,20,31,0.16);
-      border-color: #DADDEB;
-      transform: translateY(-2px);
     }
 
-    .ad-nav-item {
-      position: relative;
-      transition: background .18s ease, color .18s ease;
-    }
-    .ad-nav-item::before {
-      content: '';
-      position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-      width: 3px; height: 0; background: var(--accent);
-      border-radius: 0 4px 4px 0;
-      transition: height .2s ease;
-    }
-    .ad-nav-item.active::before { height: 22px; }
 
-    .ad-tab-underline {
-      position: relative;
+    /* =====================================================
+       TAILWIND WHITE / LIGHT BACKGROUND FIX
+    ===================================================== */
+
+    .bg-white {
+      background-color: var(--surface) !important;
     }
-    .ad-tab-underline::after {
-      content: '';
-      position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
-      background: var(--accent);
-      transform: scaleX(0);
-      transition: transform .25s ease;
+
+    .bg-slate-50,
+    .bg-slate-100,
+    .bg-gray-50,
+    .bg-gray-100 {
+      background-color: var(--surface-alt) !important;
     }
-    .ad-tab-underline.active::after { transform: scaleX(1); }
 
-    .ad-row:hover { background: var(--surface-alt); }
 
-    .ad-sidebar { transition: width .28s cubic-bezier(.2,.8,.2,1); }
-    .ad-drawer { transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+    /* =====================================================
+       BORDERS
+    ===================================================== */
 
-    .ad-glow {
-  background: radial-gradient(
-    150px 100px at 85% 0%,
-    rgba(217,93,71,0.16),
-    transparent 72%
-  );
+    .border,
+    .border-slate-100,
+    .border-slate-200,
+    .border-slate-300,
+    .border-gray-100,
+    .border-gray-200,
+    .border-gray-300 {
+      border-color: var(--border) !important;
+    }
+
+
+    /* =====================================================
+       TABLES
+    ===================================================== */
+
+    table {
+      width: 100%;
+      color: var(--ink-soft) !important;
+    }
+
+    thead,
+    thead tr {
+      background-color: #26344A !important;
+    }
+
+    th {
+      background-color: #26344A !important;
+      color: #FFFFFF !important;
+      font-weight: 700;
+    }
+
+    td {
+      color: #D7E0EC !important;
+      border-color: var(--border) !important;
+    }
+
+    tbody tr {
+      background-color: transparent !important;
+      border-color: var(--border) !important;
+    }
+
+    tbody tr:hover {
+      background-color: #243249 !important;
+    }
+
+
+    /* =====================================================
+       INPUTS
+    ===================================================== */
+
+    input,
+    select,
+    textarea {
+      background-color: #202D40 !important;
+      color: #F8FAFC !important;
+      border-color: #3B4B63 !important;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #8492A6 !important;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent) !important;
+      outline: none;
+    }
+
+
+    /* =====================================================
+       SELECT OPTIONS
+    ===================================================== */
+
+    option {
+      background-color: #202D40;
+      color: #FFFFFF;
+    }
+
+
+    /* =====================================================
+       RECOMMENDATION / INSIGHT CARDS
+    ===================================================== */
+
+    .recommendation-card,
+    .recommendation,
+    .insight-card,
+    .tip-card,
+    .suggestion-card {
+      background-color: #243249 !important;
+      color: #FFFFFF !important;
+      border: 1px solid #3B4B63 !important;
+    }
+
+    .recommendation-card *,
+    .recommendation *,
+    .insight-card *,
+    .tip-card *,
+    .suggestion-card * {
+      color: #E2E8F0 !important;
+    }
+
+
+    /* =====================================================
+       BUTTONS
+    ===================================================== */
+
+    button {
+      color: inherit;
+    }
+
+    button.bg-white {
+      background-color: #E2E8F0 !important;
+      color: #172033 !important;
+    }
+/* =====================================================
+   RECHARTS CHART TEXT
+===================================================== */
+
+.recharts-text,
+.recharts-cartesian-axis-tick-value,
+.recharts-cartesian-axis text,
+.recharts-cartesian-axis-ticks text,
+.recharts-label,
+.recharts-xAxis text,
+.recharts-yAxis text {
+    fill: #FFFFFF !important;
+    color: #FFFFFF !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
 }
-.ad-live-badge {
-  background: linear-gradient(
-    90deg,
-    #C94F6D,
-    #E77A8F
-  );
+.recharts-wrapper text {
+    fill: #F8FAFC !important;
 }
-    @media (prefers-reduced-motion: reduce) {
-      .ad-animate-in, .ad-pulse-dot, .ad-skeleton { animation: none !important; }
+.recharts-legend-item-text {
+    fill: #FFFFFF !important;
+    color: #FFFFFF !important;
+}
+
+/* =====================================================
+   RECHARTS TOOLTIP
+===================================================== */
+
+.recharts-default-tooltip {
+    background: #FFFFFF !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 10px !important;
+    padding: 10px !important;
+}
+
+.recharts-tooltip-label {
+    color: #111827 !important;
+    font-weight: 700 !important;
+}
+
+.recharts-tooltip-item,
+.recharts-tooltip-item-name,
+.recharts-tooltip-item-value {
+    color: #111827 !important;
+    fill: #111827 !important;
+}
+/* =====================================================
+   SVG ICON VISIBILITY FIX
+===================================================== */
+
+svg {
+  stroke: currentColor;
+}
+
+/* KPI icon containers */
+.w-10.h-10 svg,
+.w-11.h-11 svg,
+.w-12.h-12 svg,
+.w-14.h-14 svg {
+    color: currentColor !important;
+    stroke: currentColor !important;
+}
+
+/* Recent Top Content icons */
+.recent-content svg,
+.content-card svg,
+.top-content svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+    /* =====================================================
+       SIDEBAR
+    ===================================================== */
+
+    aside {
+      background-color: var(--sidebar-bg) !important;
     }
-  `}</style>
+
+    aside a,
+    aside button {
+      color: var(--sidebar-text) !important;
+    }
+
+    aside a:hover,
+    aside button:hover {
+      background-color: var(--sidebar-bg-hover) !important;
+      color: #FFFFFF !important;
+    }
+
+
+    /* =====================================================
+       SCROLLBAR
+    ===================================================== */
+
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #0B1220;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #3B4B63;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #53647D;
+    }
+/* =====================================================
+   REVENUE CHART TEXT VISIBILITY FIX
+===================================================== */
+
+
+/* X-axis and Y-axis labels */
+.recharts-cartesian-axis-tick text,
+.recharts-cartesian-axis-tick-value {
+  fill: #B8C5D8 !important;
+}
+
+/* Chart legend */
+.recharts-legend-item-text {
+  color: #F1F5F9 !important;
+}
+
+/* Chart tooltip */
+.recharts-tooltip-wrapper,
+.recharts-default-tooltip {
+  background-color: #1E2B3E !important;
+  color: #FFFFFF !important;
+  border: 1px solid #465873 !important;
+}
+
+.recharts-tooltip-label,
+.recharts-tooltip-item {
+  color: #FFFFFF !important;
+}
+
+
+/* =====================================================
+   CHART BELOW INFORMATION / SUMMARY BOX
+===================================================== */
+
+/* Chart keela irukkura box */
+.chart-summary,
+.chart-info,
+.chart-description,
+.chart-insight,
+.chart-footer,
+.chart-note,
+.chart-caption {
+  background-color: #26364D !important;
+  border: 1px solid #435570 !important;
+  color: #FFFFFF !important;
+}
+
+/* Box ulla ellaa text */
+.chart-summary *,
+.chart-info *,
+.chart-description *,
+.chart-insight *,
+.chart-footer *,
+.chart-note *,
+.chart-caption * {
+  color: #E8EEF7 !important;
+}
+
+
+/* =====================================================
+   REVENUE COMPONENT CARDS
+===================================================== */
+
+.revenue-card,
+.revenue-summary,
+.revenue-insight,
+.revenue-stat,
+.revenue-analysis {
+  background-color: #223047 !important;
+  border: 1px solid #40516B !important;
+  color: #FFFFFF !important;
+}
+
+.revenue-card h1,
+.revenue-card h2,
+.revenue-card h3,
+.revenue-card h4,
+.revenue-summary h1,
+.revenue-summary h2,
+.revenue-summary h3,
+.revenue-summary h4,
+.revenue-insight h1,
+.revenue-insight h2,
+.revenue-insight h3,
+.revenue-insight h4 {
+  color: #FFFFFF !important;
+}
+
+.revenue-card p,
+.revenue-summary p,
+.revenue-insight p,
+.revenue-analysis p {
+  color: #CBD5E1 !important;
+}
+
+
+/* =====================================================
+   RECOMMENDATION TEXT FIX
+===================================================== */
+
+.recommendation,
+.recommendations,
+.recommendation-card,
+.ai-recommendation,
+.ai-suggestion,
+.suggestion,
+.suggestion-card,
+.insight,
+.insight-card {
+  background-color: #26364D !important;
+  border: 1px solid #435570 !important;
+  color: #FFFFFF !important;
+}
+
+/* Recommendation ulla heading */
+.recommendation h1,
+.recommendation h2,
+.recommendation h3,
+.recommendation h4,
+.recommendations h1,
+.recommendations h2,
+.recommendations h3,
+.recommendations h4,
+.ai-recommendation h1,
+.ai-recommendation h2,
+.ai-recommendation h3,
+.ai-recommendation h4,
+.suggestion-card h1,
+.suggestion-card h2,
+.suggestion-card h3,
+.suggestion-card h4 {
+  color: #FFFFFF !important;
+}
+
+/* Recommendation ulla normal letters */
+.recommendation p,
+.recommendation span,
+.recommendation li,
+.recommendations p,
+.recommendations span,
+.recommendations li,
+.ai-recommendation p,
+.ai-recommendation span,
+.ai-recommendation li,
+.ai-suggestion p,
+.ai-suggestion span,
+.suggestion p,
+.suggestion span,
+.suggestion-card p,
+.suggestion-card span,
+.insight-card p,
+.insight-card span {
+  color: #DCE5F0 !important;
+}
+
+
+/* =====================================================
+   LIGHT COLORED INSIGHT BOX TEXT FIX
+===================================================== */
+
+/* Green, pink, yellow, blue insight boxes */
+.bg-emerald-50,
+.bg-green-50,
+.bg-teal-50,
+.bg-blue-50,
+.bg-indigo-50,
+.bg-purple-50,
+.bg-pink-50,
+.bg-rose-50,
+.bg-orange-50,
+.bg-amber-50,
+.bg-yellow-50 {
+  color: #172033 !important;
+}
+
+/* Above boxes ulla text */
+.bg-emerald-50 *,
+.bg-green-50 *,
+.bg-teal-50 *,
+.bg-blue-50 *,
+.bg-indigo-50 *,
+.bg-purple-50 *,
+.bg-pink-50 *,
+.bg-rose-50 *,
+.bg-orange-50 *,
+.bg-amber-50 *,
+.bg-yellow-50 * {
+  color: #172033 !important;
+}
+
+
+/* =====================================================
+   SPECIAL SUMMARY BOXES
+===================================================== */
+
+.bg-emerald-100,
+.bg-green-100,
+.bg-teal-100,
+.bg-blue-100,
+.bg-indigo-100,
+.bg-purple-100,
+.bg-pink-100,
+.bg-rose-100,
+.bg-orange-100,
+.bg-amber-100,
+.bg-yellow-100 {
+  color: #172033 !important;
+}
+
+.bg-emerald-100 *,
+.bg-green-100 *,
+.bg-teal-100 *,
+.bg-blue-100 *,
+.bg-indigo-100 *,
+.bg-purple-100 *,
+.bg-pink-100 *,
+.bg-rose-100 *,
+.bg-orange-100 *,
+.bg-amber-100 *,
+.bg-yellow-100 * {
+  color: #172033 !important;
+}
+  /* =====================================================
+   FIX LIGHT INSIGHT BOX TEXT VISIBILITY
+===================================================== */
+
+/* Audience chart keela irukkura insight boxes */
+.bg-white\/10,
+.bg-white\/5,
+.bg-white\/\[0\.08\],
+.bg-white\/\[0\.06\] {
+  color: #1E293B !important;
+}
+
+/* Light background cards - all text dark */
+.bg-\[\#F4EDEE\],
+.bg-\[\#E8F3F1\],
+.bg-\[\#F5EBDD\],
+.bg-\[\#EEE8F0\],
+.bg-\[\#EAF0F8\] {
+  color: #1E293B !important;
+}
+
+/* Light cards ulla heading, paragraph and span */
+.bg-\[\#F4EDEE\] *,
+.bg-\[\#E8F3F1\] *,
+.bg-\[\#F5EBDD\] *,
+.bg-\[\#EEE8F0\] *,
+.bg-\[\#EAF0F8\] * {
+  color: #1E293B !important;
+}
+
+
+/* Chart insight / recommendation boxes */
+[class*="Peak"],
+[class*="peak"],
+[class*="Active"],
+[class*="active"] {
+  color: #1E293B;
+}
+
+
+/* =====================================================
+   GENERAL LIGHT BOX FIX
+===================================================== */
+
+/* Light background irundha dark font */
+div[style*="background-color: rgb(255"],
+div[style*="background-color: rgb(245"],
+div[style*="background-color: rgb(240"],
+div[style*="background-color: rgb(235"] {
+  color: #1E293B !important;
+}
+
+div[style*="background-color: rgb(255"] *,
+div[style*="background-color: rgb(245"] *,
+div[style*="background-color: rgb(240"] *,
+div[style*="background-color: rgb(235"] * {
+  color: #1E293B !important;
+}
+  /* =====================================================
+   FINAL TEXT VISIBILITY FIX – ALL DASHBOARD MODULES
+===================================================== */
+
+/* DARK DASHBOARD – MAIN HEADINGS */
+.ad-card h1,
+.ad-card h2,
+.ad-card h3,
+.ad-card h4,
+.ad-card h5,
+.ad-card h6,
+.content-card h1,
+.content-card h2,
+.content-card h3,
+.content-card h4,
+.content-card h5,
+.content-card h6,
+.revenue-card h1,
+.revenue-card h2,
+.revenue-card h3,
+.revenue-card h4,
+.growth-card h1,
+.growth-card h2,
+.growth-card h3,
+.growth-card h4 {
+  color: #F8FAFC !important;
+}
+
+
+/* DARK DASHBOARD – NORMAL TEXT */
+.ad-card p,
+.ad-card span,
+.content-card p,
+.content-card span,
+.revenue-card p,
+.revenue-card span,
+.growth-card p,
+.growth-card span {
+  color: #CBD5E1 !important;
+}
+
+
+/* =====================================================
+   CONTENT ANALYTICS – 6 CONTENT FOUND
+===================================================== */
+
+/* Search result count button */
+[class*="content-found"],
+[class*="result-count"],
+[class*="resultCount"] {
+  color: #1E293B !important;
+  font-weight: 700 !important;
+}
+
+
+/* Light background button text */
+button[style*="background"],
+button[class*="bg-[#"] {
+  color: #1E293B;
+}
+
+
+/* =====================================================
+   LIGHT INSIGHT / RECOMMENDATION BOXES
+===================================================== */
+
+.ad-card div[style*="background"],
+.content-card div[style*="background"],
+.revenue-card div[style*="background"],
+.growth-card div[style*="background"] {
+  color: #1E293B;
+}
+
+
+/* Light box ulla all text */
+.ad-card div[style*="background"] *,
+.content-card div[style*="background"] *,
+.revenue-card div[style*="background"] *,
+.growth-card div[style*="background"] * {
+  color: #1E293B !important;
+}
+
+
+/* =====================================================
+   GROWTH & TRENDS – CHART TEXT
+===================================================== */
+
+/* Chart headings */
+.recharts-wrapper text {
+  fill: #CBD5E1 !important;
+}
+
+
+
+
+/* Chart grid lines */
+.recharts-cartesian-grid line {
+  stroke: #475569 !important;
+}
+
+
+/* Chart axis lines */
+.recharts-cartesian-axis-line {
+  stroke: #64748B !important;
+}
+
+
+/* =====================================================
+   TABLE HEADINGS
+===================================================== */
+
+table th {
+  color: #1E293B !important;
+  font-weight: 700 !important;
+}
+
+table td {
+  color: #CBD5E1 !important;
+}
+
+/* ===== TABLE HEADER FIX ===== */
+
+table th,
+thead th,
+thead tr th,
+.ad-table th,
+.ad-card table th {
+  color: #F8FAFC !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+}
+
+table td,
+tbody td {
+  color: #E5E7EB !important;
+}
+/* =====================================================
+   REVENUE SECTION
+===================================================== */
+
+[class*="revenue"] h1,
+[class*="revenue"] h2,
+[class*="revenue"] h3,
+[class*="revenue"] h4 {
+  color: #F8FAFC !important;
+}
+
+[class*="revenue"] p,
+[class*="revenue"] span,
+[class*="revenue"] label {
+  color: #CBD5E1 !important;
+}
+
+
+/* Revenue light summary boxes */
+[class*="revenue"] div[style*="background"] {
+  color: #1E293B !important;
+}
+
+[class*="revenue"] div[style*="background"] * {
+  color: #1E293B !important;
+}
+/* =====================================================
+   RECHARTS TEXT VISIBILITY FIX
+===================================================== */
+
+/* All chart text */
+.recharts-text,
+.recharts-layer text,
+.recharts-label,
+.recharts-cartesian-axis text,
+.recharts-cartesian-axis-tick-value,
+.recharts-cartesian-axis-ticks text {
+  fill: #FFFFFF !important;
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+/* X Axis */
+.recharts-xAxis text {
+  fill: #FFFFFF !important;
+}
+
+/* Y Axis */
+.recharts-yAxis text {
+  fill: #FFFFFF !important;
+}
+
+/* Legend text */
+.recharts-legend-item-text,
+.recharts-default-legend text {
+  fill: #FFFFFF !important;
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+}
+
+/* Pie labels */
+.recharts-pie-label-text,
+.recharts-pie-label-line {
+  fill: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+
+/* LabelList */
+.recharts-label-list text {
+  fill: #FFFFFF !important;
+}
+
+/* Reference line labels */
+.recharts-reference-line-label text {
+  fill: #FFFFFF !important;
+}
+
+/* =====================================================
+   GROWTH & TRENDS
+===================================================== */
+
+[class*="growth"] h1,
+[class*="growth"] h2,
+[class*="growth"] h3,
+[class*="growth"] h4 {
+  color: #F8FAFC !important;
+}
+
+[class*="growth"] p,
+[class*="growth"] span,
+[class*="growth"] label {
+  color: #CBD5E1 !important;
+}`
+
+}
+
+
+</style>
 );
-
 /* ============================================================
    DUMMY DATA
    ============================================================ */
@@ -510,10 +1363,25 @@ function useCountUp(target, duration = 900) {
 }
 
 const accentMap = {
-  accent: { fg: "var(--accent)", soft: "var(--accent-soft)" },
-  teal: { fg: "var(--teal)", soft: "var(--teal-soft)" },
-  rose: { fg: "var(--rose)", soft: "var(--rose-soft)" },
-  amber: { fg: "var(--amber)", soft: "var(--amber-soft)" },
+  accent: {
+    fg: "#FF7A59",
+    soft: "rgba(255,122,89,0.18)",
+  },
+
+  teal: {
+    fg: "#14B8A6",
+    soft: "rgba(20,184,166,0.18)",
+  },
+
+  rose: {
+    fg: "#F43F5E",
+    soft: "rgba(244,63,94,0.18)",
+  },
+
+  amber: {
+    fg: "#FBBF24",
+    soft: "rgba(251,191,36,0.18)",
+  },
 };
 
 /* ============================================================
@@ -567,53 +1435,70 @@ const SectionHeader = ({ eyebrow, title, subtitle, action }) => (
     {action}
   </div>
 );
+ const StatCard = ({ item, delay = 0 }) => {
+  const Icon = item.icon;
 
-const StatCard = ({ item, delay = 0 }) => {
-  const val = useCountUp(item.value);
-  const colors = accentMap[item.accent];
-  const displayVal = item.value % 1 !== 0 ? val.toFixed(1) : Math.round(val);
   return (
-    <div
-      className="ad-card ad-card-hover ad-animate-in p-5 relative overflow-hidden"
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      <div className="ad-glow absolute inset-0 pointer-events-none" />
-      <div className="flex items-start justify-between relative">
+    <div className="ad-card ad-card-hover p-5">
+      <div className="flex items-center justify-between">
+
         <div>
-          <div className="text-xs font-medium mb-2" style={{ color: "var(--muted)" }}>{item.label}</div>
-          <div className="font-display font-mono text-2xl md:text-[28px] font-bold" style={{ color: "var(--ink)" }}>
-            {item.prefix || ""}{fmtFull(displayVal)}{item.suffix || ""}
-          </div>
-          <div className="flex items-center gap-1 mt-2 text-xs font-semibold" style={{ color: item.positive ? "#0B8E82" : "#C22B4D" }}>
-            {item.positive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-            {Math.abs(item.delta)}%
-            <span className="font-normal ml-1" style={{ color: "var(--muted)" }}>vs last period</span>
-          </div>
+          <p
+            className="text-sm font-medium"
+            style={{ color: "var(--muted)" }}
+          >
+            {item.label}
+          </p>
+
+          <h2
+            className="text-3xl font-bold mt-2"
+            style={{ color: "var(--ink)" }}
+          >
+            {item.prefix || ""}
+            {typeof item.value === "number"
+              ? item.value.toLocaleString()
+              : item.value}
+            {item.suffix || ""}
+          </h2>
+
+          <p
+            className="text-sm mt-2 font-semibold"
+            style={{
+              color: item.positive ? "#16A34A" : "#DC2626",
+            }}
+          >
+            {item.positive ? "▲" : "▼"} {Math.abs(item.delta)}%
+          </p>
         </div>
+
         <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: colors.soft, color: colors.fg }}
+          className="w-14 h-14 rounded-2xl flex items-center justify-center"
+          style={{
+            background: "#EFF6FF",
+            color: "#2563EB",
+          }}
         >
-          <item.icon size={18} strokeWidth={2.25} />
+          <Icon size={28} strokeWidth={2} />
         </div>
+
       </div>
-      <div className="h-10 mt-3 relative">
+
+      <div className="mt-5 h-16">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={item.spark} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
-            <defs>
-              <linearGradient id={`spark-${item.key}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={colors.fg} stopOpacity={0.35} />
-                <stop offset="100%" stopColor={colors.fg} stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <Area type="monotone" dataKey="v" stroke={colors.fg} strokeWidth={2} fill={`url(#spark-${item.key})`} />
+          <AreaChart data={item.spark}>
+            <Area
+              dataKey="v"
+              stroke="#2563EB"
+              fill="#BFDBFE"
+              fillOpacity={0.4}
+              strokeWidth={2}
+            />
           </AreaChart>
         </ResponsiveContainer>
       </div>
     </div>
   );
 };
-
 /* ============================================================
    FILTERS
    ============================================================ */
@@ -812,14 +1697,14 @@ const ChartCard = ({ title, subtitle, action, children, height = 280 }) => (
 );
 
 const tooltipStyle = {
-  backgroundColor: "#12343B",
-  border: "1px solid #2B5A62",
+  backgroundColor: "#1E293B",
+  border: "1px solid #475569",
   borderRadius: "12px",
   color: "#FFFFFF",
-  fontSize: "13px",
-  fontFamily: "Inter, sans-serif",
+  fontSize: "14px",
+  fontWeight: "600",
   padding: "12px 14px",
-  boxShadow: "0 12px 30px rgba(18, 52, 59, 0.30)",
+  boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
 };
 
 const ViewsAreaChart = () => (
@@ -835,24 +1720,48 @@ const ViewsAreaChart = () => (
           <stop offset="100%" stopColor="#D95D47" stopOpacity={0} />
         </linearGradient>
       </defs>
-      <CartesianGrid strokeDasharray="3 3" stroke="#EEF0F6" vertical={false} />
-      <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#8A8FA3" }} axisLine={false} tickLine={false} />
-      <YAxis tick={{ fontSize: 11, fill: "#8A8FA3" }} axisLine={false} tickLine={false} tickFormatter={fmtCompact} width={40} />
-  <Tooltip
-  contentStyle={tooltipStyle}
-  labelStyle={{
-    color: "#FFFFFF",
-    fontWeight: 700,
-    marginBottom: "6px"
-  }}
-  itemStyle={{
-    color: "#DDF4F1",
-    fontWeight: 600
-  }}
-  cursor={{ stroke: "#0F766E", strokeWidth: 1 }}
+      <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+      <XAxis
+  dataKey="date"
+ tick={{
+  fill: "#FFFFFF",
+  fontSize: 12,
+  fontWeight: 600,
+}}
+  axisLine={{ stroke: "#475569" }}
+  tickLine={{ stroke: "#475569" }}
 />
-      <Area type="monotone" dataKey="lastPeriod" stroke="#D6D9E6" strokeWidth={2} fill="none" strokeDasharray="4 4" />
-      <Area type="monotone" dataKey="views" stroke="#D95D47" strokeWidth={2.5} fill="url(#viewsFill)" />
+      <YAxis
+ tick={{
+  fill: "#FFFFFF",
+  fontSize: 12,
+  fontWeight: 600,
+}}
+  axisLine={{ stroke: "#475569" }}
+  tickLine={{ stroke: "#475569" }}
+/>
+<Tooltip content={<CustomTooltip />} />
+
+<Area
+  type="monotone"
+  dataKey="lastPeriod"
+  name="Last Period"
+  stroke="#D6D9E6"
+  strokeWidth={2}
+  fill="none"
+  strokeDasharray="4 4"
+/>
+
+<Area
+  type="monotone"
+  dataKey="views"
+  name="Views"
+  stroke="#D95D47"
+  strokeWidth={2.5}
+  fill="url(#viewsFill)"
+/>
+      <Area type="monotone" dataKey="lastPeriod" name="Last Period" stroke="#D6D9E6" strokeWidth={2} fill="none" strokeDasharray="4 4" />
+      <Area type="monotone" dataKey="views" name ="Views"stroke="#D95D47" strokeWidth={2.5} fill="url(#viewsFill)" />
     </AreaChart>
   </ChartCard>
 );
@@ -871,23 +1780,26 @@ const Legend2 = ({ items }) => (
 const EngagementBarChart = () => (
   <ChartCard title="Engagement by Content Type" subtitle="Total interactions, last 28 days">
     <BarChart data={engagementByType} margin={{ top: 4, right: 8, left: -18, bottom: 0 }} barSize={34}>
-      <CartesianGrid strokeDasharray="3 3" stroke="#EEF0F6" vertical={false} />
-      <XAxis dataKey="type" tick={{ fontSize: 11, fill: "#8A8FA3" }} axisLine={false} tickLine={false} />
-      <YAxis tick={{ fontSize: 11, fill: "#8A8FA3" }} axisLine={false} tickLine={false} tickFormatter={fmtCompact} width={40} />
-<Tooltip
-  contentStyle={tooltipStyle}
-  labelStyle={{
-    color: "#FFFFFF",
-    fontWeight: 700,
-    marginBottom: "6px"
-  }}
-  itemStyle={{
-    color: "#DDF4F1",
-    fontWeight: 600
-  }}
-  cursor={{ stroke: "#0F766E", strokeWidth: 1 }}
-/>
-      <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+     <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+     <XAxis
+  dataKey="type"
+  tick={{
+    fontSize: 12,
+    fill: "#FFFFFF",
+    fontWeight: 600,
+  }}axisLine={false} tickLine={false} width={40}  />
+      <YAxis
+  tick={{
+    fontSize: 12,
+    fill: "#FFFFFF",
+    fontWeight: 600,
+  }}axisLine={false} tickLine={false} tickFormatter={fmtCompact} width={40} />
+<Tooltip content={<CustomTooltip />} />
+      <Bar
+  dataKey="value"
+  name="Interactions"
+  radius={[8,8,0,0]}
+>
         {engagementByType.map((_, i) => (
           <Cell key={i} fill={["#D95D47", "#E57B64", "#EDA18E", "#F3C0B2", "#F8DCD3"][i % 5]} />
         ))}
@@ -900,22 +1812,63 @@ const RevenueLineChart = () => (
   <ChartCard title="Estimated Revenue" subtitle="Daily earnings trend">
     <LineChart data={revenueSeries} margin={{ top: 4, right: 8, left: -18, bottom: 0 }}>
       <CartesianGrid strokeDasharray="3 3" stroke="#EEF0F6" vertical={false} />
-      <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#8A8FA3" }} axisLine={false} tickLine={false} />
-      <YAxis tick={{ fontSize: 11, fill: "#8A8FA3" }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${fmtCompact(v)}`} width={46} />
-     <Tooltip
-  contentStyle={tooltipStyle}
-  labelStyle={{
-    color: "#FFFFFF",
-    fontWeight: 700,
-    marginBottom: "6px"
-  }}
-  itemStyle={{
-    color: "#DDF4F1",
-    fontWeight: 600
-  }}
-  cursor={{ stroke: "#0F766E", strokeWidth: 1 }}
+      <XAxis
+  dataKey="date"
+  tick={{ fill: "#F8FAFC", fontSize: 12 }}
+  axisLine={{ stroke: "#475569" }}
+  tickLine={{ stroke: "#475569" }}
 />
-      <Line type="monotone" dataKey="revenue" stroke="#F5A524" strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} />
+<YAxis
+  tick={{ fill: "#F8FAFC", fontSize: 12 }}
+  axisLine={{ stroke: "#475569" }}
+  tickLine={{ stroke: "#475569" }}
+/>
+     <Tooltip content={CustomTooltip } />
+
+    return (
+      <div
+        style={{
+          background: "#1E293B",
+          border: "1px solid #475569",
+          borderRadius: "12px",
+          padding: "12px",
+          color: "#FFFFFF",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.35)",
+        }}
+      >
+        <p
+          style={{
+            color: "#FFFFFF",
+            fontWeight: 700,
+            marginBottom: 8,
+          }}
+        >
+          {label}
+        </p>
+
+        {payload.map((entry, index) => (
+          <p
+            key={index}
+            style={{
+              color: "#FFFFFF",
+              margin: "4px 0",
+              fontWeight: 600,
+            }}
+          >
+            {entry.name}: {entry.value}
+          </p>
+        ))}
+      </div>
+    );
+      <Line
+  type="monotone"
+  dataKey="revenue"
+  name="Revenue"
+  stroke="#F5A524"
+  strokeWidth={2.5}
+  dot={false}
+  activeDot={{ r: 5 }}
+/>
     </LineChart>
   </ChartCard>
 );
@@ -934,23 +1887,56 @@ const GrowthAreaChart = () => (
         </linearGradient>
       </defs>
       <CartesianGrid strokeDasharray="3 3" stroke="#EEF0F6" vertical={false} />
-      <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#8A8FA3" }} axisLine={false} tickLine={false} />
-      <YAxis tick={{ fontSize: 11, fill: "#8A8FA3" }} axisLine={false} tickLine={false} tickFormatter={fmtCompact} width={44} />
-     <Tooltip
-  contentStyle={tooltipStyle}
-  labelStyle={{
-    color: "#FFFFFF",
-    fontWeight: 700,
-    marginBottom: "6px"
-  }}
-  itemStyle={{
-    color: "#DDF4F1",
-    fontWeight: 600
-  }}
-  cursor={{ stroke: "#0F766E", strokeWidth: 1 }}
+      <XAxis
+  dataKey="date"
+  tick={{ fill: "#F8FAFC", fontSize: 12 }}
+  axisLine={{ stroke: "#475569" }}
+  tickLine={{ stroke: "#475569" }}
 />
-      <Area type="monotone" dataKey="followers" stroke="#12B5A6" strokeWidth={2.5} fill="url(#followFill)" />
-      <Line type="monotone" dataKey="unfollows" stroke="#F0466E" strokeWidth={2} dot={false} />
+      <YAxis
+  tick={{ fill: "#F8FAFC", fontSize: 12 }}
+  axisLine={{ stroke: "#475569" }}
+  tickLine={{ stroke: "#475569" }}
+/>
+<Tooltip content={CustomTooltip} />
+
+    return (
+      <div
+        style={{
+          background: "#1E293B",
+          border: "1px solid #475569",
+          borderRadius: "12px",
+          padding: "12px",
+          color: "#FFFFFF",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.35)",
+        }}
+      >
+        <p
+          style={{
+            color: "#FFFFFF",
+            fontWeight: 700,
+            marginBottom: 8,
+          }}
+        >
+          {label}
+        </p>
+
+        {payload.map((entry, index) => (
+          <p
+            key={index}
+            style={{
+              color: "#FFFFFF",
+              margin: "4px 0",
+              fontWeight: 600,
+            }}
+          >
+            {entry.name}: {entry.value}
+          </p>
+        ))}
+      </div>
+    );
+      <Area type="monotone" dataKey="followers" name="Followers"stroke="#12B5A6" strokeWidth={2.5} fill="url(#followFill)" />
+      <Line type="monotone" dataKey="unfollows" name="Unfollows" stroke="#F0466E" strokeWidth={2} dot={false} />
     </AreaChart>
   </ChartCard>
 );
@@ -961,40 +1947,60 @@ const DemographicsPie = () => (
       <Pie data={ageGroups} dataKey="value" nameKey="name" innerRadius={62} outerRadius={92} paddingAngle={3} cornerRadius={4}>
         {ageGroups.map((g, i) => <Cell key={i} fill={g.color} stroke="none" />)}
       </Pie>
- <Tooltip
-  contentStyle={{
-    backgroundColor: "#1E293B",
-    border: "1px solid #475569",
-    borderRadius: "10px",
-    color: "#FFFFFF",
-    padding: "10px 14px",
-  }}
-  labelStyle={{
-    color: "#FFFFFF",
-    fontWeight: 900,
-    marginBottom: "6px",
-  }}
-  itemStyle={{
-    color: "#FFFFFF",
-    fontWeight:700,
-  }}
-  formatter={(value, name) => [
-    <span style={{ color: "#FFFFFF", fontWeight: 700 }}>
-      {value}%
-    </span>,
-    <span style={{ color: "#FFFFFF" }}>
-      {name}
-    </span>,
-  ]}
-/>
+<Tooltip content={<CustomTooltip />} />
 
+    return (
+      <div
+        style={{
+          background: "#1E293B",
+          border: "1px solid #475569",
+          borderRadius: "12px",
+          padding: "12px",
+          color: "#FFFFFF",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.35)",
+        }}
+      >
+        <p
+          style={{
+            color: "#FFFFFF",
+            fontWeight: 700,
+            marginBottom: 8,
+          }}
+        >
+          {label}
+        </p>
+
+        {payload.map((entry, index) => (
+          <p
+            key={index}
+            style={{
+              color: "#FFFFFF",
+              margin: "4px 0",
+              fontWeight: 600,
+            }}
+          >
+            {entry.name}: {entry.value}
+          </p>
+        ))}
+      </div>
+    );
       <Legend
-        verticalAlign="bottom"
-        height={36}
-        formatter={(v) => <span style={{ color: "var(--ink-soft)", fontSize: 12 }}>{v}</span>}
-        iconType="circle"
-        iconSize={8}
-      />
+  verticalAlign="bottom"
+  height={36}
+  formatter={(v) => (
+    <span
+      style={{
+        color: "#111827",
+        fontSize: 12,
+        fontWeight: 600,
+      }}
+    >
+      {v}
+    </span>
+  )}
+  iconType="circle"
+  iconSize={10}
+/>
     </PieChart>
   </ChartCard>
 );
@@ -1005,40 +2011,60 @@ const GenderDonut = () => (
       <Pie data={genderSplit} dataKey="value" nameKey="name" innerRadius={62} outerRadius={92} paddingAngle={3} cornerRadius={4}>
         {genderSplit.map((g, i) => <Cell key={i} fill={g.color} stroke="none" />)}
       </Pie>
-     <Tooltip
-  contentStyle={{
-    backgroundColor: "#1E293B",
-    border: "1px solid #475569",
-    borderRadius: "10px",
-    color: "#FFFFFF",
-    padding: "10px 14px",
-  }}
-  labelStyle={{
-    color: "#FFFFFF",
-    fontWeight: 900,
-    marginBottom: "6px",
-  }}
-  itemStyle={{
-    color: "#FFFFFF",
-    fontWeight: 700,
-  }}
-  formatter={(value, name) => [
-    <span style={{ color: "#FFFFFF", fontWeight: 700 }}>
-      {value}%
-    </span>,
-    <span style={{ color: "#FFFFFF" }}>
-      {name}
-    </span>,
-  ]}
-/>
+     <Tooltip content={<CustomTooltip />} />
+    return (
+      <div
+        style={{
+          background: "#1E293B",
+          border: "1px solid #475569",
+          borderRadius: "12px",
+          padding: "12px",
+          color: "#FFFFFF",
+          boxShadow: "0 8px 20px rgba(0,0,0,0.35)",
+        }}
+      >
+        <p
+          style={{
+            color: "#FFFFFF",
+            fontWeight: 700,
+            marginBottom: 8,
+          }}
+        >
+          {label}
+        </p>
 
-      <Legend
-        verticalAlign="bottom"
-        height={36}
-        formatter={(v) => <span style={{ color: "var(--ink-soft)", fontSize: 12 }}>{v}</span>}
-        iconType="circle"
-        iconSize={8}
-      />
+        {payload.map((entry, index) => (
+          <p
+            key={index}
+            style={{
+              color: "#FFFFFF",
+              margin: "4px 0",
+              fontWeight: 600,
+            }}
+          >
+            {entry.name}: {entry.value}
+          </p>
+        ))}
+      </div>
+    );
+
+     <Legend
+  verticalAlign="bottom"
+  height={36}
+  formatter={(v) => (
+    <span
+      style={{
+        color: "#111827",
+        fontSize: 12,
+        fontWeight: 600,
+      }}
+    >
+      {v}
+    </span>
+  )}
+  iconType="circle"
+  iconSize={10}
+/>
     </PieChart>
   </ChartCard>
 );
@@ -1047,7 +2073,11 @@ const LocationsCard = () => (
   <div className="ad-card p-5">
     <div className="flex items-center justify-between mb-4">
       <h3 className="font-display text-sm font-semibold" style={{ color: "var(--ink)" }}>Top Locations</h3>
-      <Globe size={16} style={{ color: "var(--muted)" }} />
+      <Globe
+  size={18}
+  color="#F8FAFC"
+  strokeWidth={2.2}
+style={{ color: "var(--muted)" }} />
     </div>
     <div className="space-y-3.5">
       {topLocations.map((loc) => (
@@ -1197,6 +2227,7 @@ const DashboardHome = ({ user, userRole }) => (
     <SectionHeader
       eyebrow="Overview"
       title={`Welcome back, ${user?.fullName || "User"}`}
+      Eye size={40} color="red"
       subtitle={`${userRole} Dashboard • Here's how your account performed over the last 14 days.`}
       action={<Filters range="7D" setRange={() => {}} showType={false} />}
    />
@@ -1236,10 +2267,15 @@ const DashboardHome = ({ user, userRole }) => (
     {/* Total Reach */}
     <div className="ad-card ad-card-hover p-5">
       <div className="flex items-center justify-between">
+
         <div>
           <p
             className="text-xs font-medium"
-            style={{ color: "var(--muted)" }}
+            style={{
+  background: "#eb3a0a",
+  color: "#FFFFFF",
+}}
+
           >
             Total Reach
           </p>
@@ -1258,15 +2294,17 @@ const DashboardHome = ({ user, userRole }) => (
             +15.7% from last period
           </p>
         </div>
-
         <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center"
-          style={{
-            background: "var(--teal-soft)",
-            color: "var(--teal)",
-          }}
-        >
-          <Users size={20} />
+  className="w-11 h-11 rounded-xl flex items-center justify-center"
+  style={{
+    background: "#14B8A6",
+  }}
+>
+  <Users
+    size={22}
+    color="#FFFFFF"
+    strokeWidth={2.8}
+  />
         </div>
       </div>
     </div>
@@ -1274,11 +2312,15 @@ const DashboardHome = ({ user, userRole }) => (
     {/* Engagement Rate */}
     <div className="ad-card ad-card-hover p-5">
       <div className="flex items-center justify-between">
+        
 
         <div>
           <p
             className="text-xs font-medium"
-            style={{ color: "var(--muted)" }}
+            style={{
+  background: "#EA580C",
+  color: "#FFFFFF",
+}}
           >
             Engagement Rate
           </p>
@@ -1296,16 +2338,19 @@ const DashboardHome = ({ user, userRole }) => (
           >
             +8.1% from last period
           </p>
-        </div>
+         </div>
+       <div
+  className="w-11 h-11 rounded-xl flex items-center justify-center"
+  style={{
+    background: "#F97316",
+  }}
+>
+  <Heart
+    size={22}
+    color="#FFFFFF"
+    strokeWidth={2.8}
+  />
 
-        <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center"
-          style={{
-            background: "var(--accent-soft)",
-            color: "var(--accent)",
-          }}
-        >
-          <Heart size={20} />
         </div>
 
       </div>
@@ -1318,7 +2363,10 @@ const DashboardHome = ({ user, userRole }) => (
         <div>
           <p
             className="text-xs font-medium"
-            style={{ color: "var(--muted)" }}
+            style={{
+  background: "#CA8A04",
+  color: "#FFFFFF",
+}}
           >
             Average Watch Time
           </p>
@@ -1339,15 +2387,17 @@ const DashboardHome = ({ user, userRole }) => (
         </div>
 
         <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center"
-          style={{
-            background: "var(--amber-soft)",
-            color: "var(--amber)",
-          }}
-        >
-          <Clock size={20} />
-        </div>
-
+  className="w-11 h-11 rounded-xl flex items-center justify-center"
+  style={{
+    background: "#EAB308",
+  }}
+>
+  <Clock
+    size={22}
+    color="#FFFFFF"
+    strokeWidth={2.8}
+  />
+</div>
       </div>
     </div>
 
@@ -1358,7 +2408,10 @@ const DashboardHome = ({ user, userRole }) => (
         <div>
           <p
             className="text-xs font-medium"
-            style={{ color: "var(--muted)" }}
+            style={{
+  background: "#BE185D",
+  color: "#FFFFFF",
+}}
           >
             Total Interactions
           </p>
@@ -1379,14 +2432,17 @@ const DashboardHome = ({ user, userRole }) => (
         </div>
 
         <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center"
-          style={{
-            background: "var(--rose-soft)",
-            color: "var(--rose)",
-          }}
-        >
-          <MessageCircle size={20} />
-        </div>
+  className="w-11 h-11 rounded-xl flex items-center justify-center"
+  style={{
+    background: "#EC4899",
+  }}
+>
+  <MessageCircle
+    size={22}
+    color="#FFFFFF"
+    strokeWidth={2.8}
+  />
+</div>
 
       </div>
     </div>
@@ -1407,7 +2463,13 @@ const DashboardHome = ({ user, userRole }) => (
           {topContent.slice(0, 4).map((row) => (
             <div key={row.id} className="ad-row flex items-center gap-3 p-2.5 rounded-xl transition-colors">
               <div className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--accent-soft)" }}>
-                <Play size={16} style={{ color: "var(--accent)" }} />
+                <Play
+  size={18}
+  color="#FFFFFF"
+  strokeWidth={2.4}
+ style={{
+  background: "#334155"
+}} />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium truncate" style={{ color: "var(--ink)" }}>{row.title}</div>
@@ -1495,19 +2557,7 @@ const ContentTrendChart = ({
               }
             />
 
-            <Tooltip
-  contentStyle={tooltipStyle}
-  labelStyle={{
-    color: "#FFFFFF",
-    fontWeight: 600,
-  }}
-  itemStyle={{
-    color: "#FFFFFF",
-    fontWeight: 500,
-  }}
-  formatter={(value) => fmtFull(value)}
-/>
-
+<Tooltip content={<CustomTooltip />} />
             <Line
               type="monotone"
               dataKey={dataKey}
@@ -1705,9 +2755,9 @@ const highestWatchTime = [...topContent].sort(
             className="flex items-center justify-center rounded-xl font-semibold"
             style={{
               background:
-                "#FFF0EB",
+                "#e64713",
               color:
-                "#C94C38"
+                "#bfaca9"
             }}
           >
             {filteredContent.length}
@@ -2546,17 +3596,13 @@ const AgencyDashboard = () => {
             />
 
             <YAxis />
+<Tooltip content={<CustomTooltip />} />
 
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#FFFFFF",
-                border: "1px solid #CBD5E1",
-                borderRadius: "12px",
-                color: "#0F172A"
-              }}
-            />
-
-            <Legend />
+           <Legend
+  wrapperStyle={{
+    color: "#F8FAFC"
+  }}
+/>
 
             <Line
               type="monotone"
@@ -3082,17 +4128,13 @@ const AgencyDashboard = () => {
             <XAxis dataKey="period" />
 
             <YAxis />
+<Tooltip content={<CustomTooltip />} />
 
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#ffffff",
-                color: "#0f172a",
-                border: "1px solid #cbd5e1",
-                borderRadius: "12px",
-              }}
-            />
-
-            <Legend />
+           <Legend
+  wrapperStyle={{
+    color: "#F8FAFC"
+  }}
+/>
 
             <Line
               type="monotone"
@@ -3657,9 +4699,7 @@ const AgencyCreatorsDashboard = () => {
         title="Agency Creator Analytics"
         subtitle="Monitor creator growth, engagement, reach and overall performance."
       />
-      <div className="bg-red-500 text-white p-6 rounded-2xl text-2xl font-bold">
-  TEST – Agency Creator New Features Working
-</div>
+    
 
       {/* KPI CARDS */}
 
@@ -3753,18 +4793,13 @@ const AgencyCreatorsDashboard = () => {
 
             <YAxis />
 
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#FFFFFF",
-                border: "1px solid #CBD5E1",
-                borderRadius: "12px",
-                color: "#0F172A",
-                fontSize: "14px",
-              }}
-            />
+<Tooltip content={<CustomTooltip />} />
 
-            <Legend />
-
+            <Legend
+  wrapperStyle={{
+    color: "#F8FAFC"
+  }}
+/>
             <Line
               type="monotone"
               dataKey="creators"
@@ -4067,18 +5102,13 @@ const AgencyCreatorsDashboard = () => {
               />
 
               <YAxis />
+<Tooltip content={<CustomTooltip />} />
 
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#FFFFFF",
-                  border: "1px solid #CBD5E1",
-                  borderRadius: "12px",
-                  color: "#0F172A",
-                }}
-              />
-
-              <Legend />
-
+             <Legend
+  wrapperStyle={{
+    color: "#F8FAFC"
+  }}
+/>
               <Bar
                 dataKey="engagement"
                 name="Engagement %"
@@ -4793,17 +5823,15 @@ const roiRanking = [
         />
 
         <YAxis />
-
-        <Tooltip
-          contentStyle={{
-            backgroundColor: "#FFFFFF",
-            border: "1px solid #CBD5E1",
-            borderRadius: "12px",
-            color: "#0F172A",
-          }}
-        />
-
-        <Legend />
+<Tooltip content={<CustomTooltip />} />
+        <Legend
+  wrapperStyle={{
+    color: "#F8FAFC"
+  }}
+  wrapperStyle={{
+    color: "#F8FAFC"
+  }}
+/>
 
         <Line
           type="monotone"
@@ -4941,17 +5969,9 @@ const roiRanking = [
             <XAxis dataKey="month" />
 
             <YAxis />
+<Tooltip content={<CustomTooltip />} />
 
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "#FFFFFF",
-                border: "1px solid #CBD5E1",
-                borderRadius: "12px",
-                color: "#0F172A",
-              }}
-            />
-
-            <Legend />
+            <Legend/>
 
             <Line
               type="monotone"
