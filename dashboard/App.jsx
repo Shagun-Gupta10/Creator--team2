@@ -23,7 +23,7 @@ function App() {
 
         <Route
           path="/register"
-          element={<h1>REGISTER TEST PAGE</h1>}
+          element={<Register />}
         />
         <Route
           path="/login"

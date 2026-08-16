@@ -55,4 +55,9 @@ def instagram_callback(code: str):
         }
     ).json()
 
-    return profile
+    return {
+        "profile": profile,
+        "page id": page_id,
+        "page_access_token": page_token,
+        "instagram_business_id": ig_id
+    }

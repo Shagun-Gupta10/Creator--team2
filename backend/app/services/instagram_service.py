@@ -55,33 +55,42 @@ def get_posts():
     return response.json()
 
 def sync_posts():
-    db: Session = SessionLocal()
+    db = SessionLocal()
 
     try:
-        posts = get_posts()
+        posts_response = get_posts()
 
-        if "data" not in posts:
-            return posts
+        if "data" not in posts_response:
+            return posts_response
+
+        profile = get_profile()
+        followers = profile.get("followers_count", 0)
 
         saved = 0
+        updated = 0
 
-        for post in posts["data"]:
-
-            existing = db.query(InstagramPost).filter(
-                InstagramPost.media_id == post["id"]
-            ).first()
-
-            if existing:
-                continue
-
-            likes = post.get("like_count", 0)
-            comments = post.get("comments_count", 0)
+        for post in posts_response["data"]:
+            likes = post.get("like_count", 0) or 0
+            comments = post.get("comments_count", 0) or 0
 
             engagement = 0.0
-            followers = get_profile().get("followers_count", 0)
 
             if followers > 0:
                 engagement = ((likes + comments) / followers) * 100
+
+            existing = (
+                db.query(InstagramPost)
+                .filter(InstagramPost.media_id == post["id"])
+                .first()
+            )
+
+            if existing:
+                existing.like_count = likes
+                existing.comments_count = comments
+                existing.engagement_rate = round(engagement, 2)
+
+                updated += 1
+                continue
 
             new_post = InstagramPost(
                 media_id=post["id"],
@@ -90,7 +99,6 @@ def sync_posts():
                 media_url=post.get("media_url"),
                 permalink=post.get("permalink"),
                 timestamp=post.get("timestamp"),
-
                 like_count=likes,
                 comments_count=comments,
                 engagement_rate=round(engagement, 2)
@@ -102,8 +110,10 @@ def sync_posts():
         db.commit()
 
         return {
-            "message": "Posts synchronized successfully",
-            "new_posts_saved": saved
+            "message": "Instagram posts synchronized successfully",
+            "new_posts_saved": saved,
+            "posts_updated": updated,
+            "followers_used_for_engagement": followers
         }
 
     finally:

@@ -58,6 +58,12 @@ export default function SocialPage({ platform, title, subtitle }) {
   window.location.href = data.login_url;
 };
 
+const connectInstagram = async () => {
+  const res = await fetch("http://localhost:8000/auth/instagram/login");
+  const data = await res.json();
+  window.location.href = data.login_url;
+};
+
 const connectFacebook = async () => {
   const res = await fetch("http://localhost:8000/auth/facebook/login");
   const data = await res.json();
@@ -118,6 +124,14 @@ const connectFacebook = async () => {
         <div>
           <h1 className="text-3xl font-bold text-text">{title}</h1>
           <div className="flex gap-3 mb-6">
+
+<button
+    onClick={connectInstagram}
+    className="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700"
+  >
+    Connect Instagram
+  </button>
+  
   <button
     onClick={connectYouTube}
     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"

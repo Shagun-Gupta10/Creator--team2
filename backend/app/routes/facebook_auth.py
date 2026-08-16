@@ -16,7 +16,8 @@ REDIRECT_URI = os.getenv("FACEBOOK_REDIRECT_URI")
 
 SCOPES = [
     "public_profile",
-    
+    "pages_show_list",
+    "pages_read_engagement",
 ]
 
 @router.get("/login")

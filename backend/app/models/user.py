@@ -33,3 +33,19 @@ class User(Base):
         uselist=False,
         cascade="all, delete-orphan"
     )
+    settings = relationship(
+    "UserSettings",
+    back_populates="user",
+    uselist=False,
+    cascade="all, delete-orphan"
+    )
+    audience = relationship(
+    "Audience",
+    back_populates="creator",
+    cascade="all, delete-orphan"
+    )
+    social_accounts = relationship(
+    "SocialAccount",
+    back_populates="creator",
+    cascade="all, delete-orphan"
+    )

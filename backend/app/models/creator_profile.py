@@ -38,3 +38,7 @@ class CreatorProfile(Base):
         "User",
         back_populates="creator_profile"
     )
+    contents = relationship(
+    "Content",
+    back_populates="creator"
+    )
