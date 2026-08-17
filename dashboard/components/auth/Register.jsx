@@ -26,37 +26,64 @@ const Register = () => {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (
-      !formData.fullName ||
-      !formData.email ||
-      !formData.phone ||
-      !formData.password
-    ) {
-      alert("Please fill all required fields");
+  if (
+    !formData.fullName ||
+    !formData.email ||
+    !formData.phone ||
+    !formData.password
+  ) {
+    alert("Please fill all required fields");
+    return;
+  }
+
+  if (formData.password !== formData.confirmPassword) {
+    alert("Passwords do not match");
+    return;
+  }
+
+  if (!formData.agree) {
+    alert("Accept Terms & Conditions");
+    return;
+  }
+
+  try {
+    const nameParts = formData.fullName.trim().split(" ");
+
+    const first_name = nameParts[0];
+    const last_name = nameParts.slice(1).join(" ") || "";
+
+    const response = await fetch("http://localhost:8000/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        first_name,
+        last_name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.detail || "Registration failed");
       return;
     }
-
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
-      return;
-    }
-
-    if (!formData.agree) {
-      alert("Accept Terms & Conditions");
-      return;
-    }
-
-    localStorage.setItem(
-      "creatorUser",
-      JSON.stringify(formData)
-    );
 
     alert("Registration Successful");
     navigate("/login");
-  };
+
+  } catch (error) {
+    console.error("Registration failed:", error);
+    alert("Unable to connect to the server.");
+  }
+};
 
 return (
 <div className="min-h-screen bg-[#2D1B18] flex items-center justify-center p-5">

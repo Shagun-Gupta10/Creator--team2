@@ -1,6 +1,5 @@
-import token
-
 from fastapi import APIRouter
+from fastapi.responses import RedirectResponse
 import os
 import requests
 from app.auth.instagram_oauth import get_login_url
@@ -19,9 +18,7 @@ router = APIRouter(
 
 @router.get("/login")
 def instagram_login():
-    return {
-        "login_url": get_login_url()
-    }
+    return RedirectResponse(url=get_login_url())
 
 @router.get("/callback")
 def instagram_callback(code: str):
@@ -55,9 +52,4 @@ def instagram_callback(code: str):
         }
     ).json()
 
-    return {
-        "profile": profile,
-        "page id": page_id,
-        "page_access_token": page_token,
-        "instagram_business_id": ig_id
-    }
+    return {"login_url": login_url}

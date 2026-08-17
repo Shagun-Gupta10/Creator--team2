@@ -17,6 +17,7 @@ import SecurityAudit from "./admin/SecurityAudit";
 import AdminReports from "./admin/AdminReports";
 import AdminNotifications from "./admin/AdminNotifications";
 import React, { useState, useMemo, useEffect, useRef } from "react";
+import axios from "axios";
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -2226,7 +2227,35 @@ const Navbar = ({globalSearch,setGlobalSearch,handleGlobalSearch,}) => {
 /* ============================================================
    PAGES
    ============================================================ */
-const DashboardHome = ({ user, userRole }) => (
+const DashboardHome = ({ user, userRole }) => {
+  const [facebookConnected, setFacebookConnected] = useState(false);
+  const [instagramConnected, setInstagramConnected] = useState(false);
+
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get("facebook") === "connected") {
+    setFacebookConnected(true);
+    localStorage.setItem("facebookConnected", "true");
+    window.history.replaceState({}, "", "/dashboard");
+  }
+
+  if (params.get("instagram") === "connected") {
+    setInstagramConnected(true);
+    localStorage.setItem("instagramConnected", "true");
+    window.history.replaceState({}, "", "/dashboard");
+  }
+
+  if (localStorage.getItem("facebookConnected") === "true") {
+    setFacebookConnected(true);
+  }
+
+  if (localStorage.getItem("instagramConnected") === "true") {
+    setInstagramConnected(true);
+  }
+}, []);
+
+  return (
   <div className="space-y-6">
     <SectionHeader
       eyebrow="Overview"
@@ -2235,10 +2264,207 @@ const DashboardHome = ({ user, userRole }) => (
       subtitle={`${userRole} Dashboard • Here's how your account performed over the last 14 days.`}
       action={<Filters range="7D" setRange={() => {}} showType={false} />}
    />
+   
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       {kpiData.map((item, i) => <StatCard key={item.key} item={item} delay={i * 80} />)}
     </div>
+    
     {/* ================= ANALYSIS METRICS ================= */}
+
+{/* Social Connections */}
+<div className="ad-card ad-card-hover p-5 md:p-6 mb-6">
+  <div className="mb-5">
+    <p
+      className="text-xs font-semibold uppercase tracking-widest"
+      style={{ color: "var(--accent)" }}
+    >
+      Social Connections
+    </p>
+
+    <h3
+      className="font-display text-xl font-semibold mt-1"
+      style={{ color: "var(--ink)" }}
+    >
+      Connect your social accounts
+    </h3>
+
+    <p
+      className="text-sm mt-1"
+      style={{ color: "var(--muted)" }}
+    >
+      Connect your social accounts to bring real analytics into CreatorIQ.
+    </p>
+  </div>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+    {/* Facebook */}
+    <div
+      className="rounded-2xl p-5 flex items-center justify-between gap-4"
+      style={{
+        border: "1px solid var(--border)",
+        background: "var(--surface-alt)",
+      }}
+    >
+      <div className="flex items-center gap-4">
+        <div
+          className="w-12 h-12 rounded-xl flex items-center justify-center"
+          style={{ background: "#1877F2" }}
+        >
+          <span
+            style={{
+              color: "#FFFFFF",
+              fontSize: "28px",
+              fontWeight: 800,
+            }}
+          >
+            f
+          </span>
+        </div>
+
+        <div>
+          <h4
+            className="font-semibold"
+            style={{ color: "var(--ink)" }}
+          >
+            Facebook
+          </h4>
+
+          <p
+            className="text-xs mt-1"
+            style={{ color: "var(--muted)" }}
+          >
+            Connect your Facebook Page
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={async () => {
+  try {
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      alert("Please login first.");
+      navigate("/login");
+      return;
+    }
+
+    const res = await axios.get(
+      `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"}/auth/facebook/login`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    window.location.assign(res.data.login_url);
+  } catch (error) {
+    console.error("Facebook connection failed:", error);
+    alert(
+      error?.response?.data?.detail ||
+      "Facebook connection failed."
+    );
+  }
+}}
+        className="px-4 py-2 rounded-xl font-semibold text-sm"
+        style={{
+          background: "#1877F2",
+          color: "#FFFFFF",
+        }}
+      >
+        {facebookConnected ? "Connected" : "Connect"}
+      </button>
+    </div>
+
+    {/* Instagram */}
+    <div
+      className="rounded-2xl p-5 flex items-center justify-between gap-4"
+      style={{
+        border: "1px solid var(--border)",
+        background: "var(--surface-alt)",
+      }}
+    >
+      <div className="flex items-center gap-4">
+        <div
+          className="w-12 h-12 rounded-xl flex items-center justify-center"
+          style={{
+            background:
+              "linear-gradient(135deg, #833AB4, #E1306C, #F77737)",
+          }}
+        >
+          <span
+            style={{
+              color: "#FFFFFF",
+              fontSize: "25px",
+              fontWeight: 700,
+            }}
+          >
+            ◎
+          </span>
+        </div>
+
+        <div>
+          <h4
+            className="font-semibold"
+            style={{ color: "var(--ink)" }}
+          >
+            Instagram
+          </h4>
+
+          <p
+            className="text-xs mt-1"
+            style={{ color: "var(--muted)" }}
+          >
+            Connect your Instagram account
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={async () => {
+  try {
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      alert("Please login first.");
+      navigate("/login");
+      return;
+    }
+
+    const res = await axios.get(
+      `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"}/auth/instagram/login`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    window.location.assign(res.data.login_url);
+  } catch (error) {
+    console.error("Instagram connection failed:", error);
+    alert(
+      error?.response?.data?.detail ||
+      "Instagram connection failed."
+    );
+  }
+}}
+        className="px-4 py-2 rounded-xl font-semibold text-sm"
+        style={{
+          background: "#E1306C",
+          color: "#FFFFFF",
+        }}
+      >
+        {instagramConnected ? "Connected" : "Connect"}
+      </button>
+    </div>
+
+  </div>
+</div>
 
 <div>
   <div className="flex items-center justify-between mb-4">
@@ -2491,6 +2717,8 @@ const DashboardHome = ({ user, userRole }) => (
     </div>
   </div>
 );
+};
+
 const ContentTrendChart = ({
   title,
   dataKey,
@@ -4563,6 +4791,18 @@ const AgencyDashboard = () => {
    APP ROOT
    ============================================================ */
 export default function AnalyticsDashboard() {
+  const [facebookConnected, setFacebookConnected] = useState(false);
+
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get("facebook") === "connected") {
+    setFacebookConnected(true);
+    console.log("FACEBOOK CONNECTED");
+
+    window.history.replaceState({}, "", "/dashboard");
+  }
+}, []);
   const [active, setActive] = useState("home");
   const [globalSearch, setGlobalSearch] = useState("");
   const [collapsed, setCollapsed] = useState(false);

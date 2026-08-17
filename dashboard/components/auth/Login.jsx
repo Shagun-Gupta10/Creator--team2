@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
   Mail,
   Lock,
@@ -16,26 +17,40 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = (e) => {
-    e.preventDefault();
+const handleLogin = async (e) => {
+  e.preventDefault();
 
-    const savedUser = JSON.parse(
-      localStorage.getItem("creatorUser")
-    );
+  try {
+    const formData = new URLSearchParams();
 
-    if (
-      savedUser &&
-      savedUser.email === email &&
-      savedUser.password === password
-    ) {
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userRole", savedUser.role);
+    formData.append("username", email);
+    formData.append("password", password);
 
-      navigate("/dashboard");
-    } else {
-      alert("Invalid email or password");
+    const response = await fetch("http://localhost:8000/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.detail || "Invalid email or password");
+      return;
     }
-  };
+
+    localStorage.setItem("access_token", data.access_token);
+    localStorage.setItem("isLoggedIn", "true");
+
+    navigate("/dashboard");
+
+  } catch (error) {
+    console.error("Login failed:", error);
+    alert("Unable to connect to the server.");
+  }
+};
 
   return (
    <div className="min-h-screen bg-[#080D18] text-white flex items-center justify-center p-5">

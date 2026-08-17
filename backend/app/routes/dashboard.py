@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
+from app.models.creator_profile import CreatorProfile
 from app.database import get_db
 from app.services.dashboard_service import (
     get_dashboard_summary,
@@ -80,3 +80,34 @@ def instagram_audience_growth():
 @router.get("/instagram/trends")
 def instagram_trends():
     return get_post_trends()
+
+@router.get("/facebook")
+def facebook_dashboard(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_role([
+            "creator",
+            "agency",
+            "marketing_team",
+            "administrator"
+        ])
+    ),
+):
+    creator_profile = db.query(CreatorProfile).filter(
+        CreatorProfile.user_id == current_user.id
+    ).first()
+
+    if not creator_profile:
+        return {
+            "connected": False,
+            "page_name": None,
+            "followers": 0,
+            "total_posts": 0,
+        }
+
+    return {
+        "connected": bool(creator_profile.facebook_page_id),
+        "page_name": creator_profile.facebook_page_name,
+        "followers": creator_profile.facebook_followers or 0,
+        "total_posts": 0,
+    }

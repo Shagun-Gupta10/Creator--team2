@@ -58,3 +58,49 @@ def get_user_pages(access_token):
     response = requests.get(url, params=params)
 
     return response.json()
+
+def get_page_info(page_id: str, page_access_token: str):
+    url = f"https://graph.facebook.com/v25.0/{page_id}"
+
+    params = {
+        "fields": "id,name,followers_count",
+        "access_token": page_access_token,
+    }
+
+    response = requests.get(url, params=params)
+
+    print("PAGE INFO STATUS:", response.status_code)
+    print("PAGE INFO BODY:", response.text)
+
+    return response.json()
+
+
+def get_page_posts(page_id: str, page_access_token: str):
+    url = f"https://graph.facebook.com/v25.0/{page_id}/posts"
+
+    params = {
+        "fields": "id,message,created_time,permalink_url",
+        "access_token": page_access_token,
+    }
+
+    response = requests.get(url, params=params)
+
+    print("PAGE POSTS STATUS:", response.status_code)
+    print("PAGE POSTS BODY:", response.text)
+
+    return response.json()
+
+def get_page_insights(page_id: str, page_access_token: str):
+    url = f"https://graph.facebook.com/v25.0/{page_id}/insights"
+
+    params = {
+        "metric": "page_follows,page_post_engagements",
+        "access_token": page_access_token,
+    }
+
+    response = requests.get(url, params=params)
+
+    print("PAGE INSIGHTS STATUS:", response.status_code)
+    print("PAGE INSIGHTS BODY:", response.text)
+
+    return response.json()

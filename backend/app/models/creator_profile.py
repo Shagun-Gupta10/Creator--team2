@@ -22,6 +22,11 @@ class CreatorProfile(Base):
     country = Column(String(100), nullable=True)
     followers = Column(Integer, default=0)
 
+    facebook_page_id = Column(String(100), nullable=True)
+    facebook_page_access_token = Column(Text, nullable=True)
+    facebook_page_name = Column(String(150), nullable=True)
+    facebook_followers = Column(Integer, default=0)
+
     created_at = Column(
         DateTime,
         server_default=func.now()

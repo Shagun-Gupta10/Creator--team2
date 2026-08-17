@@ -189,5 +189,10 @@ export function clearAccessToken() {
   localStorage.removeItem('access_token');
 }
 
-
+export async function getFacebookDashboard() {
+  const res = await api.get('/dashboard/facebook', {
+    headers: authHeaders(),
+  });
+  return res.data;
+}
 
