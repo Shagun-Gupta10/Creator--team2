@@ -858,7 +858,7 @@ button[class*="bg-[#"] {
 .content-card div[style*="background"] *,
 .revenue-card div[style*="background"] *,
 .growth-card div[style*="background"] * {
-  color: #1E293B !important;
+  color: #e7eaef !important;
 }
 
 
@@ -2296,17 +2296,17 @@ const DashboardHome = ({ user, userRole }) => {
     </p>
   </div>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
     {/* Facebook */}
     <div
-      className="rounded-2xl p-5 flex items-center justify-between gap-4"
+      className="rounded-2xl p-4 flex items-center justify-between gap-3"
       style={{
-        border: "1px solid var(--border)",
+        border: "1px solid #3A4A63",
         background: "var(--surface-alt)",
       }}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 min-w-0">
         <div
           className="w-12 h-12 rounded-xl flex items-center justify-center"
           style={{ background: "#1877F2" }}
@@ -2322,17 +2322,15 @@ const DashboardHome = ({ user, userRole }) => {
           </span>
         </div>
 
-        <div>
+        <div className="min-w-0">
           <h4
-            className="font-semibold"
-            style={{ color: "var(--ink)" }}
+            className="font-semibold !text-white"
           >
             Facebook
           </h4>
 
           <p
-            className="text-xs mt-1"
-            style={{ color: "var(--muted)" }}
+            className="text-xs mt-1 !text-slate-300"
           >
             Connect your Facebook Page
           </p>
@@ -2381,13 +2379,13 @@ const DashboardHome = ({ user, userRole }) => {
 
     {/* Instagram */}
     <div
-      className="rounded-2xl p-5 flex items-center justify-between gap-4"
+      className="rounded-2xl p-4 flex items-center justify-between gap-3"
       style={{
-        border: "1px solid var(--border)",
+        border: "1px solid #3A4A63",
         background: "var(--surface-alt)",
       }}
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 min-w-0">
         <div
           className="w-12 h-12 rounded-xl flex items-center justify-center"
           style={{
@@ -2408,15 +2406,13 @@ const DashboardHome = ({ user, userRole }) => {
 
         <div>
           <h4
-            className="font-semibold"
-            style={{ color: "var(--ink)" }}
+            className="font-semibold !text-white"
           >
             Instagram
           </h4>
 
           <p
-            className="text-xs mt-1"
-            style={{ color: "var(--muted)" }}
+            className="text-xs mt-1 !text-slate-300"
           >
             Connect your Instagram account
           </p>
@@ -2424,9 +2420,8 @@ const DashboardHome = ({ user, userRole }) => {
       </div>
 
       <button
-        type="button"
-        onClick={async () => {
-  try {
+  type="button"
+  onClick={() => {
     const token = localStorage.getItem("access_token");
 
     if (!token) {
@@ -2435,31 +2430,89 @@ const DashboardHome = ({ user, userRole }) => {
       return;
     }
 
-    const res = await axios.get(
-      `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"}/auth/instagram/login`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+    window.location.assign(
+      `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"}/auth/instagram/login`
     );
+  }}
+  className="px-4 py-2 rounded-xl font-semibold text-sm !text-white"
+  style={{
+    background: "#E1306C",
+  }}
+>
+  {instagramConnected ? "Connected" : "Connect"}
+</button>
+    </div>
 
-    window.location.assign(res.data.login_url);
-  } catch (error) {
-    console.error("Instagram connection failed:", error);
-    alert(
-      error?.response?.data?.detail ||
-      "Instagram connection failed."
-    );
-  }
-}}
-        className="px-4 py-2 rounded-xl font-semibold text-sm"
+{/* Youtube */}
+<div
+      className="rounded-2xl p-4 flex items-center justify-between gap-3"
+      style={{
+        border: "1px solid #3A4A63",
+        background: "var(--surface-alt)",
+      }}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <div
+          className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: "#FF0000" }}
+        >
+          <span
+            style={{
+              color: "#FFFFFF",
+              fontSize: "20px",
+              fontWeight: 800,
+            }}
+          >
+            ▶
+          </span>
+        </div>
+
+        <div className="min-w-0">
+          <h4 className="font-semibold !text-white">
+            YouTube
+             </h4>
+
+          <p className="text-xs mt-1 !text-slate-300">
+            Connect your YouTube channel
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={async () => {
+          try {
+            const token = localStorage.getItem("access_token");
+
+            if (!token) {
+              alert("Please login first.");
+              navigate("/login");
+              return;
+            }
+
+            const res = await axios.get(
+              `${import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"}/auth/youtube/login`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            window.location.assign(res.data.login_url);
+          } catch (error) {
+            console.error("YouTube connection failed:", error);
+            alert(
+              error?.response?.data?.detail ||
+              "YouTube connection failed."
+            );
+          }
+        }}
+        className="px-4 py-2 rounded-xl font-semibold text-sm !text-white flex-shrink-0"
         style={{
-          background: "#E1306C",
-          color: "#FFFFFF",
+          background: "#FF0000",
         }}
       >
-        {instagramConnected ? "Connected" : "Connect"}
+        Connect
       </button>
     </div>
 

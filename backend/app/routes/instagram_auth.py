@@ -52,4 +52,4 @@ def instagram_callback(code: str):
         }
     ).json()
 
-    return {"login_url": login_url}
+    return profile

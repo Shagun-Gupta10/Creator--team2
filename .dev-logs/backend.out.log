@@ -1,0 +1,12 @@
+APP_ID = 1036111555497094
+APP_SECRET = 708b8308
+None
+None
+None
+FACEBOOK_APP_ID: None
+FACEBOOK_APP_SECRET: None
+FACEBOOK_REDIRECT_URI: None
+INFO:     127.0.0.1:52245 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52245 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61951 - "POST /login HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:65444 - "POST /register HTTP/1.1" 422 Unprocessable Entity
